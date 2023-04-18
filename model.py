@@ -30,7 +30,7 @@ class Contact(db.Model):
     contact_id = db.Column(db.Integer, 
                         autoincrement = True,
                         primary_key = True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id")) #contacts > users
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"))
     fname = db.Column(db.String)
     lname = db.Column(db.String)
 
@@ -48,12 +48,12 @@ class Occasion(db.Model):
     occasion_id = db.Column(db.Integer, 
                         autoincrement = True,
                         primary_key = True)
+    contact_id = db.Column(db.Integer, 
+                        db.ForeignKey("contacts.contact_id")) 
     occasion_type = db.Column(db.String)
     recurring = db.Column(db.Boolean)
     tier_id = db.Column(db.Integer,
                      db.ForeignKey("tiers.tier_id")) 
-    contact_id = db.Column(db.Integer, 
-                        db.ForeignKey("contacts.contact_id")) 
     date = db.Column(db.Datetime)
 
     contact = db.relationship("Contact", back_populates = "occasions")
@@ -70,14 +70,14 @@ class Tier(db.Model):
     tier_id = db.Column(db.Integer, 
                         autoincrement = True,
                         primary_key = True)
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey("users.user_id"))
     name = db.Column(db.String)
     description = db.Column(db.String)
     reminder_days_ahead = db.Column(db.Integer)
     reminder_type = db.Column(db.String)
     contact_group_id = db.Column(db.String)
     contact_group_status = db.Column(db.String)
-    user_id = db.Column(db.Integer,
-                        db.ForeignKey("users.user_id")) 
 
     user = db.relationship("User", back_populates = "tiers")
     occasions = db.relationship("Occasion", back_populates = "tier")

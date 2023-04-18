@@ -1,2 +1,7 @@
 env
 *.pyc
+secrets.sh
+.gitignore
+credentials.json
+quickstart.py
+token.json
