@@ -15,6 +15,7 @@ class User(db.Model):
     email = db.Column(db.String, unique = True)
     fname = db.Column(db.String, nullable = True)
     lname = db.Column(db.String, nullable = True)
+    contact_group_prefix = db.Column(db.String, nullable = True)
 
     contacts = db.relationship("Contact", back_populates = "user")
     tiers = db.relationship("Tier", back_populates = "user")

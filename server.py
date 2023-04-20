@@ -64,31 +64,33 @@ def display_logged_in_homepage():
 @app.route('/manage-tiers')
 def manage_tiers():
     """Edit tiers"""
-    
-    return flask.render_template('tiers.html')
+    user = crud.get_user_by_id(flask.session["user_id"])
+    tiers = crud.get_tiers_by_user(user)
+    return flask.render_template('tiers.html', tiers=tiers)
 
 @app.route('/import-contacts')
 def import_contacts():
-    credentials = Credentials(**flask.session['credentials'])
-    contacts_service = build('people', 'v1', credentials = credentials)
-    user = crud.get_user_by_id(flask.session["user_id"])
-    results = contacts_service.people().connections().list(
-        resourceName='people/me',
-        pageSize=1000,
-        personFields='names,birthdays,events,memberships').execute()
-    print(f"results are: {results}")
-    connections = results.get('connections', [])
-    for person in connections:
-        fname = person["names"][0]["givenName"] #todo can there be multiple names? 
-        lname = person["names"][0]["familyName"]
-        birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
-        birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
-        contact = crud.create_contact(user, fname, lname)
-        occasion = crud.create_occasion(contact, "birthday", True, birthday)
-        db.session.add(contact)
-        db.session.add(occasion)
-        db.session.commit() 
-    contacts_service.close()
+    if "contacts_imported" not in flask.session:
+        credentials = Credentials(**flask.session['credentials'])
+        contacts_service = build('people', 'v1', credentials = credentials)
+        user = crud.get_user_by_id(flask.session["user_id"])
+        results = contacts_service.people().connections().list(
+            resourceName='people/me',
+            pageSize=1000,
+            personFields='names,birthdays,events,memberships').execute()
+        connections = results.get('connections', [])
+        for person in connections:
+            fname = person["names"][0]["givenName"] #todo can there be multiple names? 
+            lname = person["names"][0]["familyName"]
+            birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
+            birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
+            contact = crud.create_contact(user, fname, lname)
+            occasion = crud.create_occasion(contact, "birthday", True, birthday)
+            db.session.add(contact)
+            db.session.add(occasion)
+            db.session.commit() 
+        contacts_service.close()
+        flask.session["contacts_imported"] = 1
     contacts = crud.get_contacts()
     return flask.render_template('contacts-and-tiers.html', contacts=contacts)
 

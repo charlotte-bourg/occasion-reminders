@@ -1,4 +1,23 @@
 {% extends 'base.html' %}
 {% block body %}
-
+{% if not tiers %}
+    You haven't added any notification tiers yet! 
+{% else %}
+<table>
+    <tr>
+      <th>Notification Tier Name</th>
+      <th>Description</th>
+      <th>Reminder timeline (days ahead)</th>
+      <th>Reminder type</th>
+    </tr>
+    {% for tier in tiers %}
+    <tr>
+      <td>{{ tier.name }}</td>
+      <td>{{ tier.description }}</td>
+      <td>{{ tier.reminder_days_ahead }}</td>
+      <td>{{ tier.reminder_type }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
 {% endblock %}
