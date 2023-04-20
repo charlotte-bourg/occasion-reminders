@@ -13,7 +13,8 @@ class User(db.Model):
                         autoincrement = True,
                         primary_key = True)
     email = db.Column(db.String, unique = True)
-    password = db.Column(db.String)
+    fname = db.Column(db.String, nullable = True)
+    lname = db.Column(db.String, nullable = True)
 
     contacts = db.relationship("Contact", back_populates = "user")
     tiers = db.relationship("Tier", back_populates = "user")
@@ -53,7 +54,7 @@ class Occasion(db.Model):
     occasion_type = db.Column(db.String)
     recurring = db.Column(db.Boolean)
     tier_id = db.Column(db.Integer,
-                     db.ForeignKey("tiers.tier_id")) 
+                     db.ForeignKey("tiers.tier_id"), nullable = True) 
     date = db.Column(db.DateTime)
 
     contact = db.relationship("Contact", back_populates = "occasions")
