@@ -8,6 +8,8 @@ def create_user(email, password):
     user = User(email = email, password = password)
     return user
 
+    #user by email 
+
 def create_contact(user, fname, lname):
     """Create and return a new contact."""
 

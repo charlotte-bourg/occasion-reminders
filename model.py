@@ -31,7 +31,7 @@ class Contact(db.Model):
                         autoincrement = True,
                         primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"))
-    fname = db.Column(db.String)
+    fname = db.Column(db.String) #review which attributes should be nullable (default to false)
     lname = db.Column(db.String)
 
     occasions = db.relationship("Occasion", back_populates = "contact")
@@ -54,10 +54,10 @@ class Occasion(db.Model):
     recurring = db.Column(db.Boolean)
     tier_id = db.Column(db.Integer,
                      db.ForeignKey("tiers.tier_id")) 
-    date = db.Column(db.Datetime)
+    date = db.Column(db.DateTime)
 
     contact = db.relationship("Contact", back_populates = "occasions")
-    tier = db.relationships("Tier", back_populates = "occasions")
+    tier = db.relationship("Tier", back_populates = "occasions")
 
     def __repr__(self):
         return f'<Occasion occasion_id = {self.occasion_id} type = {self.occasion_type}>'
@@ -98,6 +98,5 @@ def connect_to_db(flask_app, db_uri="postgresql:///occasiondb", echo=True):
 
 if __name__ == "__main__":
     from server import app
-
     connect_to_db(app)
-    
+    app.app_context().push()
