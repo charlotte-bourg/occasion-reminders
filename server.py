@@ -79,19 +79,18 @@ def import_contacts():
     print(f"results are: {results}")
     connections = results.get('connections', [])
     for person in connections:
-        fname = person.names[0].givenName #todo can there be multiple names? 
-        lname = person.names[0].familyName
-        birthday_json = person.birthdays[0].date #todo can there be multiple birthdays
-        birthday = datetime(birthday_json.year, birthday_json.month, birthday_json.day)
+        fname = person["names"][0]["givenName"] #todo can there be multiple names? 
+        lname = person["names"][0]["familyName"]
+        birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
+        birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
         contact = crud.create_contact(user, fname, lname)
         occasion = crud.create_occasion(contact, "birthday", True, birthday)
-        db.session.add(birthday)
         db.session.add(contact)
         db.session.add(occasion)
         db.session.commit() 
     contacts_service.close()
     contacts = crud.get_contacts()
-    return flask.render_template('contacts-and-tiers.html', contacts)
+    return flask.render_template('contacts-and-tiers.html', contacts=contacts)
 
 def application_user_login():
     """Parse user details from oauth and handle application database user login"""
