@@ -38,15 +38,3 @@ Add a tier: <br>
 
 <script> </script> 
 {% endblock %}
-
-tier_id = db.Column(db.Integer, 
-autoincrement = True,
-primary_key = True)
-user_id = db.Column(db.Integer,
-db.ForeignKey("users.user_id"))
-name = db.Column(db.String)
-description = db.Column(db.String)
-reminder_days_ahead = db.Column(db.Integer)
-reminder_type = db.Column(db.String)
-contact_group_id = db.Column(db.String)
-contact_group_status = db.Column(db.String)

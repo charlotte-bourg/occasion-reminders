@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Occasion Reminders{% endblock %}
+
+{% block body %}
+
+<table>
+    <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Occasion Type</th>
+      <th>Occasion Date</th>
+      <th>Notification Tier</th>
+    </tr>
+    {% for occasion in occasions %}
+    <tr>
+      <td>{{ occasion.contact.fname }}</td>
+      <td>{{ occasion.contact.lname }}</td>
+      <td>{{ occasion.occasion_type }}</td>
+      <td>{{ occasion.date }}</td>
+      <td>{{ occasion.tier.name }}</td>
+      <td><button type="button" id="tier|occasion:{{ occasion.occasion_id }}">Update tier</button></tr>td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

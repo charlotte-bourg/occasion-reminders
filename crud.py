@@ -22,9 +22,9 @@ def create_contact(user, fname, lname):
     contact = Contact(user = user, fname = fname, lname = lname)
     return contact
 
-def get_contacts():
-    """Return all contacts."""
-    return Contact.query.all()
+def get_contacts_by_user(user):
+    """Return all of a user's contacts."""
+    return Contact.query.filter(Contact.user == user).all()
 
 def create_occasion(contact, occasion_type, recurring, date):
     """Create and return a new occasion."""
@@ -33,6 +33,14 @@ def create_occasion(contact, occasion_type, recurring, date):
                         recurring = recurring,
                         date = date)
     return occasion
+
+def get_occasions_by_user(user):
+    """Return all of a user's occasions."""
+    contacts = get_contacts_by_user(user)
+    occasions = []
+    for contact in contacts: #should this be joined load...?
+        occasions.extend(Occasion.query.filter(Occasion.contact == contact).all())
+    return occasions
 
 def create_tier(user, name, description, reminder_days_ahead, reminder_type, contact_group_id):
     """Create and return a new tier."""
@@ -52,3 +60,4 @@ def get_tiers_by_user(user):
 if __name__ == '__main__':
     from server import app
     connect_to_db(app)
+    app.app_context().push()

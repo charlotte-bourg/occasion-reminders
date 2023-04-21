@@ -63,8 +63,8 @@ def oauthcallback():
 @app.route('/homepage')
 def display_logged_in_homepage():
     """Logged in homepage"""
-    #placeholder route
-    return flask.render_template('logged-in.html')
+    
+    return flask.render_template('homepage.html')
 
 @app.route('/manage-tiers')
 def manage_tiers():
@@ -88,10 +88,10 @@ def add_tier():
 
 @app.route('/import-contacts')
 def import_contacts():
+    user = crud.get_user_by_id(flask.session["user_id"])
     if "contacts_imported" not in flask.session:
         credentials = Credentials(**flask.session['credentials'])
         contacts_service = build('people', 'v1', credentials = credentials)
-        user = crud.get_user_by_id(flask.session["user_id"])
         results = contacts_service.people().connections().list(
             resourceName='people/me',
             pageSize=1000,
@@ -109,8 +109,8 @@ def import_contacts():
             db.session.commit() 
         contacts_service.close()
         flask.session["contacts_imported"] = 1
-    contacts = crud.get_contacts()
-    return flask.render_template('contacts-and-tiers.html', contacts=contacts)
+    occasions = crud.get_occasions_by_user(user)
+    return flask.render_template("contacts.html", occasions = occasions)
 
 def application_user_login():
     """Parse user details from oauth and handle application database user login"""
