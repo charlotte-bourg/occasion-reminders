@@ -1,23 +1,52 @@
 {% extends 'base.html' %}
 {% block body %}
+Add a tier: <br>
+<form action = "/add-tier" method="post"> <!-- ajax...?-->
+  Name:<input type="text" name="tier-name"><br> <!-- help text, required fields, data validation / sanitizing -->
+  Description:<input type="text" name="tier-desc"><br>
+  Reminder timeline (days ahead):<input type="number" name="tier-days-ahead" min="0" max="100" step="1"><br>
+  Reminder Type:
+    <input type="radio" value="push" name="tier-reminder-type">
+    <label for="push">push</label>
+    <input type="radio" value="email" name="tier-reminder-type">
+    <label for="email">email</label><br>
+  <input type="submit">
+</form>
+<br>
+<br>
 {% if not tiers %}
-    You haven't added any notification tiers yet! 
-{% else %}
-<table>
-    <tr>
-      <th>Notification Tier Name</th>
-      <th>Description</th>
-      <th>Reminder timeline (days ahead)</th>
-      <th>Reminder type</th>
-    </tr>
-    {% for tier in tiers %}
-    <tr>
-      <td>{{ tier.name }}</td>
-      <td>{{ tier.description }}</td>
-      <td>{{ tier.reminder_days_ahead }}</td>
-      <td>{{ tier.reminder_type }}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% endif %}
+  You haven't added any notification tiers yet! 
+{% endif %} 
+  <table>
+      {% if tiers %}
+      <tr>
+        <th>Notification Tier Name</th>
+        <th>Description</th>
+        <th>Reminder timeline (days ahead)</th>
+        <th>Reminder type</th>
+      </tr>
+      {% endif %}
+      {% for tier in tiers %}
+      <tr>
+        <td>{{ tier.name }}</td>
+        <td>{{ tier.description }}</td>
+        <td>{{ tier.reminder_days_ahead }}</td>
+        <td>{{ tier.reminder_type }}</td>
+      </tr>
+      {% endfor %}
+  </table>
+
+<script> </script> 
 {% endblock %}
+
+tier_id = db.Column(db.Integer, 
+autoincrement = True,
+primary_key = True)
+user_id = db.Column(db.Integer,
+db.ForeignKey("users.user_id"))
+name = db.Column(db.String)
+description = db.Column(db.String)
+reminder_days_ahead = db.Column(db.Integer)
+reminder_type = db.Column(db.String)
+contact_group_id = db.Column(db.String)
+contact_group_status = db.Column(db.String)

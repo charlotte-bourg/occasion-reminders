@@ -9,12 +9,12 @@ import crud
 import model
 import server
 
-os.system("dropdb occasiondb")
-os.system("createdb occasiondb")
+#os.system("dropdb occasiondb")
+#os.system("createdb occasiondb")
 
 model.connect_to_db(server.app)
 server.app.app_context().push()
-model.db.create_all()
+#model.db.create_all()
 
 #just seeding tiers for now for testing
 user = crud.get_user_by_email("hackbright.charlotte@gmail.com")

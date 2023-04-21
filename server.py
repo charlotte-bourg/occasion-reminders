@@ -1,7 +1,7 @@
 """Server for occasion reminders app."""
 
 import requests
-import flask 
+import flask #is from flask import * worse? consider being more specific on modules 
 from model import connect_to_db,db
 import crud
 import os 
@@ -25,6 +25,11 @@ CLIENT_SECRETS_FILE = 'client_secret.json'
 def index():
     """Landing page"""
     return flask.render_template('index.html')
+
+@app.route('/logout')
+def clear_session_vars():
+    flask.session.clear()
+    return flask.redirect('/')
     
 @app.route('/authenticate')
 def google_authenticate():
@@ -67,6 +72,19 @@ def manage_tiers():
     user = crud.get_user_by_id(flask.session["user_id"])
     tiers = crud.get_tiers_by_user(user)
     return flask.render_template('tiers.html', tiers=tiers)
+
+@app.route('/add-tier', methods = ['POST'])
+def add_tier():
+    """Add tier"""
+    user = crud.get_user_by_id(flask.session["user_id"])
+    name = flask.request.form.get("tier-name")
+    description = flask.request.form.get("tier-desc")
+    days_ahead = flask.request.form.get("tier-days-ahead")
+    reminder_type = flask.request.form.get("tier-reminder-type")
+    tier = crud.create_tier(user, name, description, days_ahead, reminder_type,"tbd")
+    db.session.add(tier)
+    db.session.commit()
+    return flask.redirect('/manage-tiers')
 
 @app.route('/import-contacts')
 def import_contacts():
