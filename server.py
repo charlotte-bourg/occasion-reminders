@@ -18,6 +18,8 @@ app.secret_key = os.environ['FLASK_KEY']
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly',
                 'https://www.googleapis.com/auth/userinfo.email',
                 'https://www.googleapis.com/auth/userinfo.profile', 
+                'https://www.googleapis.com/auth/calendar.readonly',
+                'https://www.googleapis.com/auth/calendar.events',
                 'openid'] #https://github.com/requests/requests-oauthlib/issues/387
 CLIENT_SECRETS_FILE = 'client_secret.json'
 
@@ -124,6 +126,23 @@ def import_contacts():
     occasions = crud.get_occasions_by_user(user)
     return flask.render_template("contacts.html", occasions = occasions)
 
+@app.route('/get-calendar')
+def calendar(): #rename
+    #user = crud.get_user_by_id(flask.session["user_id"])
+    credentials = Credentials(**flask.session['credentials'])
+    print(f"hey these are your {credentials}")
+    calendar_service = build('calendar', 'v3', credentials = credentials)
+    calendar_list = calendar_service.calendarList().list().execute()
+    #results = calendar_service.events().list(calendarId='primary').execute()
+    cals = calendar_list.get('items',[])
+    return flask.render_template("cal.html", cals = cals)
+
+@app.route('/select-cal-"<etag>"')
+def select_cal(etag):
+    user = crud.get_user_by_id(flask.session["user_id"])
+    user.selected_cal = etag
+    return flask.render_template('send-to-cal.html')
+
 @app.route('/assign-tiers')
 def assign_tiers():
     user = crud.get_user_by_id(flask.session["user_id"])
@@ -136,14 +155,13 @@ def application_user_login():
     token = flask.session['credentials']['token']
     res = requests.get(f'https://www.googleapis.com/oauth2/v1/userinfo?access_token={token}')
     oauth_user_details = res.json()
-    if 'email' in oauth_user_details:
-        email = oauth_user_details['email']
-    else:
-        email = ""
+    email = oauth_user_details.get('email',"")
     user = crud.get_user_by_email(email)
     if user:
         flask.session["user_id"] = user.user_id
-        return user
+        return
+    name = oauth_user_details.get('name', " ")
+    fname,lname = name.split(" ")
     if 'name' in oauth_user_details:
         name = oauth_user_details['name']
         fname, lname = name.split(" ")

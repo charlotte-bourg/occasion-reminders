@@ -16,7 +16,7 @@ class User(db.Model):
     fname = db.Column(db.String, nullable = True)
     lname = db.Column(db.String, nullable = True)
     contact_group_prefix = db.Column(db.String, nullable = True)
-
+    selected_cal = db.Column(db.String, nullable=True) #by etag? 
     contacts = db.relationship("Contact", back_populates = "user")
     tiers = db.relationship("Tier", back_populates = "user")
 
