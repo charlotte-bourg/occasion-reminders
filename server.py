@@ -73,6 +73,18 @@ def manage_tiers():
     tiers = crud.get_tiers_by_user(user)
     return flask.render_template('tiers.html', tiers=tiers)
 
+@app.route('/update-tier', methods = ['POST'])
+def update_tier():
+    occasion_id = flask.request.json["occasion_id"]
+    tier_id = flask.request.json["tier_id"]
+    crud.update_tier(occasion_id, tier_id)
+    db.session.commit()
+    name = crud.get_tier_name_by_id(tier_id)
+    print(f"name is {name}")
+    return {
+        "success": True,
+        "tier_name": name}
+
 @app.route('/add-tier', methods = ['POST'])
 def add_tier():
     """Add tier"""
@@ -111,6 +123,13 @@ def import_contacts():
         flask.session["contacts_imported"] = 1
     occasions = crud.get_occasions_by_user(user)
     return flask.render_template("contacts.html", occasions = occasions)
+
+@app.route('/assign-tiers')
+def assign_tiers():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    occasions = crud.get_occasions_by_user(user)
+    tiers = crud.get_tiers_by_user(user)
+    return flask.render_template("contacts-and-tiers.html", occasions = occasions, tiers=tiers)
 
 def application_user_login():
     """Parse user details from oauth and handle application database user login"""

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Occasion Reminders{% endblock %}
+
+{% block body %}
+
+<table>
+    {% if tiers %}
+    <tr>
+      <th>Notification Tier Name</th>
+      <th>Description</th>
+      <th>Reminder timeline (days ahead)</th>
+      <th>Reminder type</th>
+    </tr>
+    {% endif %}
+    {% for tier in tiers %}
+    <tr>
+      <td>{{ tier.name }}</td>
+      <td>{{ tier.description }}</td>
+      <td>{{ tier.reminder_days_ahead }}</td>
+      <td>{{ tier.reminder_type }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<table>
+    <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Occasion Type</th>
+      <th>Occasion Date</th>
+      <th>Notification Tier</th>
+    </tr>
+    {% for occasion in occasions %}
+    <tr>
+      <td>{{ occasion.contact.fname }}</td>
+      <td>{{ occasion.contact.lname }}</td>
+      <td>{{ occasion.occasion_type }}</td>
+      <td>{{ occasion.date }}</td>
+      <td><span class=tier_name_{{ occasion.occasion_id }}>{{ occasion.tier.name }}</span></td>
+      <td><button type="button" id="{{ occasion.occasion_id }}" class="upd-tier">Update tier</button></td>
+    </tr>
+    {% endfor %}
+</table>
+<script src = "/static/associate-tiers.js"></script>
+{% endblock %}

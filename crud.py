@@ -55,7 +55,12 @@ def create_tier(user, name, description, reminder_days_ahead, reminder_type, con
 def get_tiers_by_user(user):
     return Tier.query.filter(Tier.user == user).all()
 
+def get_tier_name_by_id(tier_id):
+    return Tier.query.get(tier_id).name
 
+def update_tier(occasion_id, tier_id):
+    occasion = Occasion.query.get(occasion_id)
+    occasion.tier_id = tier_id
 
 if __name__ == '__main__':
     from server import app
