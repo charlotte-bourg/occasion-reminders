@@ -1,13 +1,8 @@
 """Server for occasion reminders app."""
-
-import requests
-import flask #is from flask import * worse? consider being more specific on modules 
+import requests, flask, crud, os #is from flask import * worse? consider being more specific on modules 
 from model import connect_to_db,db
-import crud
-import os 
-from datetime import datetime
-#from quickstart.py on people api quickstart page 
-from google.auth.transport.requests import Request
+from datetime import datetime,timedelta 
+from google.auth.transport.requests import Request #from quickstart.py on people api quickstart page 
 from google.oauth2.credentials import Credentials
 import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
@@ -30,7 +25,7 @@ def index():
 
 @app.route('/logout')
 def clear_session_vars():
-    flask.session.clear()
+    flask.session.clear()#revoke google permissions? 
     return flask.redirect('/')
     
 @app.route('/authenticate')
@@ -55,17 +50,14 @@ def oauthcallback():
 
     authorization_response = flask.request.url
     flow.fetch_token(authorization_response=authorization_response)
-
     credentials = flow.credentials
     flask.session['credentials'] = credentials_to_dict(credentials)
     application_user_login() 
-    
     return flask.redirect('/homepage')
 
 @app.route('/homepage')
 def display_logged_in_homepage():
     """Logged in homepage"""
-    
     return flask.render_template('homepage.html')
 
 @app.route('/manage-tiers')
@@ -82,7 +74,6 @@ def update_tier():
     crud.update_tier(occasion_id, tier_id)
     db.session.commit()
     name = crud.get_tier_name_by_id(tier_id)
-    print(f"name is {name}")
     return {
         "success": True,
         "tier_name": name}
@@ -123,39 +114,9 @@ def import_contacts():
             db.session.commit() 
         contacts_service.close()
         flask.session["contacts_imported"] = 1
+    else prompt()
     occasions = crud.get_occasions_by_user(user)
     return flask.render_template("contacts.html", occasions = occasions)
-
-@app.route('/get-calendar')
-def calendar(): #rename
-    #user = crud.get_user_by_id(flask.session["user_id"])
-    credentials = Credentials(**flask.session['credentials'])
-    calendar_service = build('calendar', 'v3', credentials = credentials)
-    calendar_list = calendar_service.calendarList().list().execute()
-    #results = calendar_service.events().list(calendarId='primary').execute()
-    cals = calendar_list.get('items',[])
-    print(f"your calendar_list is: {calendar_list}")
-    # flash message for user selection of their calendar
-    return flask.render_template("cal.html", cals = cals)
-
-#@app.route('/select-cal-<cal_id>')
-#def select_cal(cal_id):
-#    user = crud.get_user_by_id(flask.session["user_id"])
-#    crud.update_selected_cal(user, cal_id)
-#    db.session.commit()
-#    print(f"ur id is!!!! : {cal_id}")
-#    flask.flash("Updated your selected calendar!")
-#    return flask.redirect('/sync-events')
-
-@app.route('/select-cal', methods = ['POST'])
-def select_cal():
-    cal_id = flask.request.form.get("cal_id")
-    user = crud.get_user_by_id(flask.session["user_id"])
-    crud.update_selected_cal(user, cal_id)
-    db.session.commit()
-    print(f"ur id is!!!! : {cal_id}")
-    flask.flash("Updated your selected calendar!")
-    return flask.redirect('/sync-events')
 
 @app.route('/sync-events')
 def sync_events():
@@ -166,12 +127,65 @@ def preview_changes():
     #https://developers.google.com/calendar/api/v3/reference/events/list
     user = crud.get_user_by_id(flask.session["user_id"])
     cal_id = crud.get_cal_id_by_user(user)
-    print(f"your cal id is {cal_id}")
-    credentials = Credentials(**flask.session['credentials']) #modularize building service 
+    credentials = Credentials(**flask.session['credentials']) #todo modularize building service 
     calendar_service = build('calendar', 'v3', credentials = credentials)
     events = calendar_service.events().list(calendarId=cal_id).execute()
     print(events)
     return flask.render_template('sync.html')
+
+@app.route('/edit-method')
+def select_method():
+    method = flask.request.args.get("method")
+    if method == "add":
+        return flask.redirect('/add-events')
+    else: 
+        return flask.redirect('/update-events')
+
+@app.route('/add-events')
+def add_events():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    user_occasions = crud.get_occasions_by_user(user)
+    cal_id = crud.get_cal_id_by_user(user)
+    credentials = Credentials(**flask.session['credentials']) #todo modularize building service 
+    calendar_service = build('calendar', 'v3', credentials = credentials)
+    for occasion in user_occasions: #what is the list of occasions that needs an event? dirty flag?
+        event = create_event(occasion)
+        event = calendar_service.events().insert(calendarId=cal_id, body=event).execute()
+        print(event)
+    return flask.render_template('homepage.html')
+
+def create_event(occasion):
+    recurrence_rule = ""
+    if occasion.recurring: 
+        recurrence_rule = 'RRULE:FREQ=YEARLY'
+    occasion_date_curr_yr = occasion.date.replace(year = datetime.now().year)
+    tier = occasion.tier
+    event = { #to update when non-bday occasions are added
+        'summary': f'{occasion.contact.fname} {occasion.contact.lname}\'s {occasion.occasion_type}',
+        'start': {
+            'date': occasion_date_curr_yr.strftime('%Y-%m-%d'),
+            'timeZone': 'America/Los_Angeles',
+        },
+        'end': {
+            'date': (occasion_date_curr_yr + timedelta(days=1)).strftime('%Y-%m-%d'),
+            'timeZone': 'America/Los_Angeles', #need to handle time zone 
+        },
+        'recurrence': [
+            recurrence_rule
+        ],
+        'reminders': {
+            'useDefault': False,
+            'overrides': [
+            {'method': tier.reminder_type, 'minutes': 24 * 60 * tier.reminder_days_ahead},
+            ],
+        },
+    }
+    return event 
+
+@app.route('/update-events')
+def update_events():
+    flask.flash("this feature isn't available yet")
+    return flask.render_template('homepage.html')
 
 @app.route('/assign-tiers')
 def assign_tiers():
@@ -214,3 +228,4 @@ if __name__ == "__main__":
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1' #TODO disable for prodution
     connect_to_db(app)
     app.run(host="0.0.0.0", port = 5050, debug=True)
+    app.app_context().push()

@@ -2,5 +2,15 @@
 {% block title %}Occasion Reminders{% endblock %}
 
 {% block body %}
-<a href='/preview-changes'>Preview Changes</a>
+
+<form action = "/edit-method"> 
+    Would you like to add new events or update reminders on existing ones?
+
+      <input type="radio" value="add" name="method">
+      <label for="add">add</label>
+      <input type="radio" value="update" name="method">
+      <label for="update">update</label><br>
+    <input type="submit">
+  </form>
+
 {% endblock %}

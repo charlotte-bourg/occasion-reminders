@@ -56,10 +56,10 @@ def update_selected_cal(user, cal_id):
     user.selected_cal = cal_id
 
 def get_cal_id_by_user(user):
-    return user.selected_cal 
+    return user.selected_cal #move this to directly in server
 
 def get_tiers_by_user(user):
-    return Tier.query.filter(Tier.user == user).all()
+    return Tier.query.filter(Tier.user == user).all() #can this be in server too?
 
 def get_tier_name_by_id(tier_id):
     return Tier.query.get(tier_id).name
