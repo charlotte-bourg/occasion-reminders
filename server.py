@@ -51,6 +51,10 @@ def google_authenticate():
     flask.session['state'] = state
     return flask.redirect(authorization_url)
 
+@app.route('/testing-with-react')
+def react_func():
+    return flask.render_template('react.html')
+
 @app.route('/oauthcallback')
 def oauthcallback():
     """Callback for authentication."""
@@ -96,14 +100,19 @@ def update_tier():
 def add_tier():
     """Add a tier."""
     user = crud.get_user_by_id(flask.session["user_id"])
-    name = flask.request.form.get("tier-name")
-    description = flask.request.form.get("tier-desc")
-    days_ahead = flask.request.form.get("tier-days-ahead")
-    reminder_type = flask.request.form.get("tier-reminder-type")
-    tier = crud.create_tier(user, name, description, days_ahead, reminder_type,"tbd")
+    name = flask.request.json["tier-name"]
+    description = flask.request.json["tier-desc"]
+    days_ahead = flask.request.json["tier-days-ahead"]
+    reminder_type = flask.request.json["tier-reminder-type"]
+    tier = crud.create_tier(user, name, description, days_ahead, reminder_type,"tbd") #handle tbd
     db.session.add(tier)
     db.session.commit()
-    return flask.redirect('/manage-tiers')
+    return { #better way to do this than sending back and forth? might simplify out if i change to react
+        "success": True,
+        "tier-name": name,
+        "tier-desc": description,
+        "tier-days-ahead": days_ahead,
+        "tier-reminder-type": reminder_type}
 
 @app.route('/clear-contacts')
 def clear_occasions_and_contacts():
@@ -167,6 +176,7 @@ def add_events():
         event = create_event(occasion)
         event = calendar_service.events().insert(calendarId='primary', body=event).execute()
         print(event)
+    calendar_service.close()
     return flask.redirect('/homepage')
 
 def create_event(occasion):
