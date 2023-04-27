@@ -58,7 +58,8 @@ def oauthcallback():
 @app.route('/homepage')
 def display_logged_in_homepage():
     """Logged in homepage"""
-    return flask.render_template('homepage.html')
+    user = crud.get_user_by_id(flask.session["user_id"])
+    return flask.render_template('homepage.html', has_imported = crud.user_has_local_contacts(user))
 
 @app.route('/manage-tiers')
 def manage_tiers():
@@ -91,33 +92,46 @@ def add_tier():
     db.session.commit()
     return flask.redirect('/manage-tiers')
 
+@app.route('/clear-contacts')
+def clear_occasions_and_contacts():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    occasions = crud.get_occasions_by_user(user)
+    contacts = crud.get_contacts_by_user(user)
+    for occasion in occasions:
+        db.session.delete(occasion)
+    for contact in contacts:
+        db.session.delete(contact)
+    db.session.commit()
+    return flask.redirect('/import-contacts')
+
 @app.route('/import-contacts')
 def import_contacts():
     user = crud.get_user_by_id(flask.session["user_id"])
-    if "contacts_imported" not in flask.session:
-        credentials = Credentials(**flask.session['credentials'])
-        contacts_service = build('people', 'v1', credentials = credentials)
-        results = contacts_service.people().connections().list(
-            resourceName='people/me',
-            pageSize=1000,
-            personFields='names,birthdays,events,memberships').execute()
-        connections = results.get('connections', [])
-        for person in connections:
-            fname = person["names"][0]["givenName"] #todo can there be multiple names? 
-            lname = person["names"][0]["familyName"]
-            birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
-            birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
-            contact = crud.create_contact(user, fname, lname)
-            occasion = crud.create_occasion(contact, "birthday", True, birthday)
-            db.session.add(contact)
-            db.session.add(occasion)
-            db.session.commit() 
-        contacts_service.close()
-        flask.session["contacts_imported"] = 1
-    else prompt()
+    import_contacts_helper(user) #un-factor out if helper isn't meaningful (previously had conditional logic here)
     occasions = crud.get_occasions_by_user(user)
     return flask.render_template("contacts.html", occasions = occasions)
 
+def import_contacts_helper(user):
+    credentials = Credentials(**flask.session['credentials'])
+    contacts_service = build('people', 'v1', credentials = credentials)
+    results = contacts_service.people().connections().list(
+        resourceName='people/me',
+        pageSize=1000,
+        personFields='names,birthdays,events,memberships').execute()
+    connections = results.get('connections', [])
+    for person in connections:
+        fname = person["names"][0]["givenName"] #todo can there be multiple names? 
+        lname = person["names"][0]["familyName"]
+        birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
+        birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
+        contact = crud.create_contact(user, fname, lname)
+        occasion = crud.create_occasion(contact, "birthday", True, birthday)
+        db.session.add(contact)
+        db.session.add(occasion)
+    db.session.commit() 
+    contacts_service.close() #todo close other sessions
+    user.last_contact_import = datetime.now()
+    
 @app.route('/sync-events')
 def sync_events():
     return flask.render_template('sync.html')
@@ -144,22 +158,20 @@ def select_method():
 @app.route('/add-events')
 def add_events():
     user = crud.get_user_by_id(flask.session["user_id"])
-    user_occasions = crud.get_occasions_by_user(user)
-    cal_id = crud.get_cal_id_by_user(user)
+    user_occasions = crud.get_tiered_occasions_by_user(user) # need to add user feedback 
     credentials = Credentials(**flask.session['credentials']) #todo modularize building service 
     calendar_service = build('calendar', 'v3', credentials = credentials)
     for occasion in user_occasions: #what is the list of occasions that needs an event? dirty flag?
         event = create_event(occasion)
-        event = calendar_service.events().insert(calendarId=cal_id, body=event).execute()
+        event = calendar_service.events().insert(calendarId='primary', body=event).execute()
         print(event)
-    return flask.render_template('homepage.html')
+    return flask.redirect('/homepage')
 
 def create_event(occasion):
-    recurrence_rule = ""
+    tier = occasion.tier
     if occasion.recurring: 
         recurrence_rule = 'RRULE:FREQ=YEARLY'
     occasion_date_curr_yr = occasion.date.replace(year = datetime.now().year)
-    tier = occasion.tier
     event = { #to update when non-bday occasions are added
         'summary': f'{occasion.contact.fname} {occasion.contact.lname}\'s {occasion.occasion_type}',
         'start': {
@@ -185,7 +197,7 @@ def create_event(occasion):
 @app.route('/update-events')
 def update_events():
     flask.flash("this feature isn't available yet")
-    return flask.render_template('homepage.html')
+    return flask.redirect('/homepage')
 
 @app.route('/assign-tiers')
 def assign_tiers():

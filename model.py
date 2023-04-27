@@ -15,6 +15,8 @@ class User(db.Model):
     email = db.Column(db.String, unique = True)
     fname = db.Column(db.String, nullable = True)
     lname = db.Column(db.String, nullable = True)
+    last_contact_import = db.Column(db.DateTime, nullable = True)
+    last_contact_tier_export = db.Column(db.DateTime, nullable = True)
     contact_group_prefix = db.Column(db.String, nullable = True)
     selected_cal = db.Column(db.String, nullable=True) #by id
     contacts = db.relationship("Contact", back_populates = "user")

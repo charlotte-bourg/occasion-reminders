@@ -26,6 +26,15 @@ def get_contacts_by_user(user):
     """Return all of a user's contacts."""
     return Contact.query.filter(Contact.user == user).all()
 
+def user_has_local_contacts(user):
+    if Contact.query.filter(Contact.user == user).first():
+        print("true from crud")
+        return True
+    else:
+        print("false from crud")
+        return False
+    #fix this messy testing stuff 
+
 def create_occasion(contact, occasion_type, recurring, date):
     """Create and return a new occasion."""
     occasion = Occasion(contact = contact, 
@@ -36,11 +45,11 @@ def create_occasion(contact, occasion_type, recurring, date):
 
 def get_occasions_by_user(user):
     """Return all of a user's occasions."""
-    contacts = get_contacts_by_user(user)
-    occasions = []
-    for contact in contacts: #should this be joined load...?
-        occasions.extend(Occasion.query.filter(Occasion.contact == contact).all())
-    return occasions
+    return db.session.query(Occasion).join(Contact).filter(Contact.user == user).all()
+
+def get_tiered_occasions_by_user(user):
+    """Return all of a user's occasions that have tiers"""
+    return db.session.query(Occasion).join(Contact).filter(Contact.user == user, Occasion.tier != None).all()
 
 def create_tier(user, name, description, reminder_days_ahead, reminder_type, contact_group_id):
     """Create and return a new tier."""
