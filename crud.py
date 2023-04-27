@@ -8,32 +8,11 @@ def create_user(email, fname, lname):
     user = User(email = email, fname = fname, lname = lname)
     return user
 
-def get_user_by_email(email):
-    """Retrieve user by email"""
-    return User.query.filter(User.email == email).first()
-
-def get_user_by_id(id):
-    """Retrieve user by email"""
-    return User.query.get(id)
-
 def create_contact(user, fname, lname):
     """Create and return a new contact."""
 
     contact = Contact(user = user, fname = fname, lname = lname)
     return contact
-
-def get_contacts_by_user(user):
-    """Return all of a user's contacts."""
-    return Contact.query.filter(Contact.user == user).all()
-
-def user_has_local_contacts(user):
-    if Contact.query.filter(Contact.user == user).first():
-        print("true from crud")
-        return True
-    else:
-        print("false from crud")
-        return False
-    #fix this messy testing stuff 
 
 def create_occasion(contact, occasion_type, recurring, date):
     """Create and return a new occasion."""
@@ -42,14 +21,6 @@ def create_occasion(contact, occasion_type, recurring, date):
                         recurring = recurring,
                         date = date)
     return occasion
-
-def get_occasions_by_user(user):
-    """Return all of a user's occasions."""
-    return db.session.query(Occasion).join(Contact).filter(Contact.user == user).all()
-
-def get_tiered_occasions_by_user(user):
-    """Return all of a user's occasions that have tiers"""
-    return db.session.query(Occasion).join(Contact).filter(Contact.user == user, Occasion.tier != None).all()
 
 def create_tier(user, name, description, reminder_days_ahead, reminder_type, contact_group_id):
     """Create and return a new tier."""
@@ -61,19 +32,36 @@ def create_tier(user, name, description, reminder_days_ahead, reminder_type, con
                 contact_group_id = contact_group_id)
     return tier
 
-def update_selected_cal(user, cal_id):
-    user.selected_cal = cal_id
+def get_user_by_email(email):
+    """Retrieve user by email."""
+    return User.query.filter(User.email == email).first()
 
-def get_cal_id_by_user(user):
-    return user.selected_cal #move this to directly in server
+def get_user_by_id(id):
+    """Retrieve user by email."""
+    return User.query.get(id)
 
-def get_tiers_by_user(user):
-    return Tier.query.filter(Tier.user == user).all() #can this be in server too?
+def user_has_local_contacts(user):
+    """Return boolean value for whether user has any contacts in application database."""
+    return bool(Contact.query.filter(Contact.user == user).first())
+
+def get_contacts_by_user(user):
+    """Return all of a user's contacts."""
+    return Contact.query.filter(Contact.user == user).all()
+
+def get_occasions_by_user(user):
+    """Return all of a user's occasions."""
+    return db.session.query(Occasion).join(Contact).filter(Contact.user == user).all()
+
+def get_tiered_occasions_by_user(user):
+    """Return all of a user's occasions that have tiers."""
+    return db.session.query(Occasion).join(Contact).filter(Contact.user == user, Occasion.tier != None).all()
 
 def get_tier_name_by_id(tier_id):
+    """Return name of tier."""
     return Tier.query.get(tier_id).name
 
 def update_tier(occasion_id, tier_id):
+    """Update tier value on an occasion."""
     occasion = Occasion.query.get(occasion_id)
     occasion.tier_id = tier_id
 

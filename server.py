@@ -1,12 +1,20 @@
-"""Server for occasion reminders app."""
-import requests, flask, crud, os #is from flask import * worse? consider being more specific on modules 
-from model import connect_to_db,db
+"""Server for occasion reminders app.""" 
+#best practices for imports: https://peps.python.org/pep-0008/#imports, clean these up based on what you use 
+import os
+
+import flask
+import requests
+
 from datetime import datetime,timedelta 
+
 from google.auth.transport.requests import Request #from quickstart.py on people api quickstart page 
 from google.oauth2.credentials import Credentials
 import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+import crud
+from model import db, connect_to_db
 
 app = flask.Flask(__name__)
 app.secret_key = os.environ['FLASK_KEY']
@@ -18,19 +26,22 @@ SCOPES = ['https://www.googleapis.com/auth/contacts.readonly',
                 'openid'] #https://github.com/requests/requests-oauthlib/issues/387
 CLIENT_SECRETS_FILE = 'client_secret.json'
 
+#consider implementing a decorator to check if the user is logged in
+
 @app.route('/')
 def index():
-    """Landing page"""
+    """Display pre-login page."""
     return flask.render_template('index.html')
 
 @app.route('/logout')
 def clear_session_vars():
+    """Log out."""
     flask.session.clear()#revoke google permissions? 
     return flask.redirect('/')
     
 @app.route('/authenticate')
 def google_authenticate():
-    """Allow user to authenticate with Google account / oauth"""
+    """Authenticate using oauth with user Google account."""
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes = SCOPES) 
@@ -42,6 +53,7 @@ def google_authenticate():
 
 @app.route('/oauthcallback')
 def oauthcallback():
+    """Callback for authentication."""
     state = flask.session['state']
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, 
                                                                    scopes = SCOPES, 
@@ -57,19 +69,20 @@ def oauthcallback():
 
 @app.route('/homepage')
 def display_logged_in_homepage():
-    """Logged in homepage"""
+    """Display logged in homepage."""
     user = crud.get_user_by_id(flask.session["user_id"])
     return flask.render_template('homepage.html', has_imported = crud.user_has_local_contacts(user))
 
 @app.route('/manage-tiers')
 def manage_tiers():
-    """Edit tiers"""
+    """Display tiers page."""
     user = crud.get_user_by_id(flask.session["user_id"])
-    tiers = crud.get_tiers_by_user(user)
+    tiers = user.tiers
     return flask.render_template('tiers.html', tiers=tiers)
 
 @app.route('/update-tier', methods = ['POST'])
 def update_tier():
+    """Update a tier on an occasion."""
     occasion_id = flask.request.json["occasion_id"]
     tier_id = flask.request.json["tier_id"]
     crud.update_tier(occasion_id, tier_id)
@@ -81,7 +94,7 @@ def update_tier():
 
 @app.route('/add-tier', methods = ['POST'])
 def add_tier():
-    """Add tier"""
+    """Add a tier."""
     user = crud.get_user_by_id(flask.session["user_id"])
     name = flask.request.form.get("tier-name")
     description = flask.request.form.get("tier-desc")
@@ -94,6 +107,7 @@ def add_tier():
 
 @app.route('/clear-contacts')
 def clear_occasions_and_contacts():
+    """Clear the user's contacts & occasions in the application database to prepare for a refresh."""
     user = crud.get_user_by_id(flask.session["user_id"])
     occasions = crud.get_occasions_by_user(user)
     contacts = crud.get_contacts_by_user(user)
@@ -106,12 +120,9 @@ def clear_occasions_and_contacts():
 
 @app.route('/import-contacts')
 def import_contacts():
+    """Import contacts from user's Google contacts."""
     user = crud.get_user_by_id(flask.session["user_id"])
-    import_contacts_helper(user) #un-factor out if helper isn't meaningful (previously had conditional logic here)
-    occasions = crud.get_occasions_by_user(user)
-    return flask.render_template("contacts.html", occasions = occasions)
 
-def import_contacts_helper(user):
     credentials = Credentials(**flask.session['credentials'])
     contacts_service = build('people', 'v1', credentials = credentials)
     results = contacts_service.people().connections().list(
@@ -131,20 +142,11 @@ def import_contacts_helper(user):
     db.session.commit() 
     contacts_service.close() #todo close other sessions
     user.last_contact_import = datetime.now()
+    occasions = crud.get_occasions_by_user(user)
+    return flask.render_template("contacts.html", occasions = occasions)
     
 @app.route('/sync-events')
 def sync_events():
-    return flask.render_template('sync.html')
-
-@app.route('/preview-changes')
-def preview_changes():
-    #https://developers.google.com/calendar/api/v3/reference/events/list
-    user = crud.get_user_by_id(flask.session["user_id"])
-    cal_id = crud.get_cal_id_by_user(user)
-    credentials = Credentials(**flask.session['credentials']) #todo modularize building service 
-    calendar_service = build('calendar', 'v3', credentials = credentials)
-    events = calendar_service.events().list(calendarId=cal_id).execute()
-    print(events)
     return flask.render_template('sync.html')
 
 @app.route('/edit-method')
@@ -203,7 +205,7 @@ def update_events():
 def assign_tiers():
     user = crud.get_user_by_id(flask.session["user_id"])
     occasions = crud.get_occasions_by_user(user)
-    tiers = crud.get_tiers_by_user(user)
+    tiers = user.tiers 
     return flask.render_template("contacts-and-tiers.html", occasions = occasions, tiers=tiers)
 
 def application_user_login():
@@ -225,6 +227,7 @@ def application_user_login():
     return 
 
 def credentials_to_dict(credentials): #https://developers.google.com/identity/protocols/oauth2/web-server#python
+    """Parse credentials into dictionary format for session"""
     return {'token': credentials.token,
             'refresh_token': credentials.refresh_token,
             'token_uri': credentials.token_uri,

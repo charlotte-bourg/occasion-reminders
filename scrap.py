@@ -18,3 +18,14 @@
 #     print(f"ur id is!!!! : {cal_id}")
 #     flask.flash("Updated your selected calendar!")
 #     return flask.redirect('/sync-events')
+
+#@app.route('/preview-changes')
+#def preview_changes():
+    #https://developers.google.com/calendar/api/v3/reference/events/list
+#    user = crud.get_user_by_id(flask.session["user_id"])
+#    cal_id = crud.get_cal_id_by_user(user)
+#    credentials = Credentials(**flask.session['credentials']) #todo modularize building service 
+#    calendar_service = build('calendar', 'v3', credentials = credentials)
+#    events = calendar_service.events().list(calendarId=cal_id).execute()
+#    print(events)
+#    return flask.render_template('sync.html')
