@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Occasion Reminders{% endblock %}
+
+{% block body %}
+Success! Added the following events to your calendar: 
+{% for event in added_events %}
+<ul>
+    <li><a href={{ event.link }}>{{ event.summary }}</a></li></td>
+</ul>
+{% endfor %}
+{% endblock %}

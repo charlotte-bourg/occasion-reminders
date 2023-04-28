@@ -156,22 +156,41 @@ def sync_events():
 def select_method():
     method = flask.request.args.get("method")
     if method == "add":
+        return flask.redirect('/add-preview')
+    else: 
+        return flask.redirect('/update-preview')
+
+@app.route('/approve-deny')
+def approve_deny():
+    if flask.request.args.get("approve") == "Send to calendar":
         return flask.redirect('/add-events')
     else: 
-        return flask.redirect('/update-events')
+        flask.flash("Make more edits!")
+        return flask.redirect('/homepage')
+
+@app.route('/add-preview') 
+def events_preview():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    tiered_occasions = crud.get_tiered_occasions_by_user(user) # need to add user feedback 
+    events = []
+    for occasion in tiered_occasions: #what is the list of occasions that needs an event? dirty flag?
+        events.append(create_event(occasion))
+    return flask.render_template('preview.html', events = events)
 
 @app.route('/add-events') 
 def add_events():
     user = crud.get_user_by_id(flask.session["user_id"])
-    user_occasions = crud.get_tiered_occasions_by_user(user) # need to add user feedback 
+    tiered_occasions = crud.get_tiered_occasions_by_user(user) # need to add user feedback 
     credentials = Credentials(**flask.session['credentials']) #todo modularize building service 
     calendar_service = build('calendar', 'v3', credentials = credentials)
-    for occasion in user_occasions: #what is the list of occasions that needs an event? dirty flag?
+    added_events = []
+    for occasion in tiered_occasions: #what is the list of occasions that needs an event? dirty flag?
         event = create_event(occasion)
         event = calendar_service.events().insert(calendarId='primary', body=event).execute()
         print(event)
+        added_events.append({'summary':event['summary'], 'link': event['htmlLink']})
     calendar_service.close()
-    return flask.redirect('/homepage')
+    return flask.render_template('events.html', added_events=added_events)
 
 def create_event(occasion):
     tier = occasion.tier
@@ -180,6 +199,7 @@ def create_event(occasion):
     occasion_date_curr_yr = occasion.date.replace(year = datetime.now().year)
     event = { #to update when non-bday occasions are added
         'summary': f'{occasion.contact.fname} {occasion.contact.lname}\'s {occasion.occasion_type}',
+        'description': f'Added by Hackbright Occasion Reminders! Contact group: {occasion.tier.name}',
         'start': {
             'date': occasion_date_curr_yr.strftime('%Y-%m-%d'),
             'timeZone': 'America/Los_Angeles',

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Occasion Reminders{% endblock %}
+
+{% block body %}
+The following events will be added to your calendar: 
+{% for event in events %}
+<table>
+    <tr>
+      <th>Summary</th>
+      <th>Description</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Recurrence</th>
+      <th>Reminders</th>
+    </tr>
+    <tr>
+      <td>{{ event.summary }}</td>
+      <td>{{ event.description }}</td>
+      <td>{{ event.start }}</td>
+      <td>{{ event.end }}</td>
+      <td>{{ event.recurrence }}</td>
+      <td>{{ event.reminders.overrides.method }} ({{ event.reminders.overrides[0].minutes }}/(24*60)) days ahead</td>
+</table>
+{% endfor %}
+<br>
+<form action = '/approve-deny'>
+    <input type="submit" name="approve" value="Send to calendar"></input>
+    <br>
+    <input type="submit" name="deny" value="Go back to make more edits"></input>
+</form>
+{% endblock %}
