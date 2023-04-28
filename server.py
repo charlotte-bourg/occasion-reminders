@@ -4,6 +4,7 @@ import os
 
 import flask
 import requests
+import json
 
 from datetime import datetime,timedelta 
 
@@ -51,10 +52,6 @@ def google_authenticate():
     flask.session['state'] = state
     return flask.redirect(authorization_url)
 
-@app.route('/testing-with-react')
-def react_func():
-    return flask.render_template('react.html')
-
 @app.route('/oauthcallback')
 def oauthcallback():
     """Callback for authentication."""
@@ -75,16 +72,14 @@ def oauthcallback():
 def display_logged_in_homepage():
     """Display logged in homepage."""
     user = crud.get_user_by_id(flask.session["user_id"])
-    return flask.render_template('homepage.html', has_imported = crud.user_has_local_contacts(user))
+    occasions = crud.get_occasions_by_user(user)
+    tiers = user.tiers 
+    return flask.render_template('homepage.html', 
+                                 occasions=occasions, 
+                                 tiers=tiers,
+                                 has_imported = crud.user_has_local_contacts(user))
 
-@app.route('/manage-tiers')
-def manage_tiers():
-    """Display tiers page."""
-    user = crud.get_user_by_id(flask.session["user_id"])
-    tiers = user.tiers
-    return flask.render_template('tiers.html', tiers=tiers)
-
-@app.route('/update-tier', methods = ['POST'])
+@app.route('/update-tier', methods = ['POST']) 
 def update_tier():
     """Update a tier on an occasion."""
     occasion_id = flask.request.json["occasion_id"]
@@ -96,7 +91,7 @@ def update_tier():
         "success": True,
         "tier_name": name}
 
-@app.route('/add-tier', methods = ['POST'])
+@app.route('/add-tier', methods = ['POST']) 
 def add_tier():
     """Add a tier."""
     user = crud.get_user_by_id(flask.session["user_id"])
@@ -114,7 +109,7 @@ def add_tier():
         "tier-days-ahead": days_ahead,
         "tier-reminder-type": reminder_type}
 
-@app.route('/clear-contacts')
+@app.route('/clear-contacts') 
 def clear_occasions_and_contacts():
     """Clear the user's contacts & occasions in the application database to prepare for a refresh."""
     user = crud.get_user_by_id(flask.session["user_id"])
@@ -131,7 +126,6 @@ def clear_occasions_and_contacts():
 def import_contacts():
     """Import contacts from user's Google contacts."""
     user = crud.get_user_by_id(flask.session["user_id"])
-
     credentials = Credentials(**flask.session['credentials'])
     contacts_service = build('people', 'v1', credentials = credentials)
     results = contacts_service.people().connections().list(
@@ -166,7 +160,7 @@ def select_method():
     else: 
         return flask.redirect('/update-events')
 
-@app.route('/add-events')
+@app.route('/add-events') 
 def add_events():
     user = crud.get_user_by_id(flask.session["user_id"])
     user_occasions = crud.get_tiered_occasions_by_user(user) # need to add user feedback 
@@ -206,17 +200,10 @@ def create_event(occasion):
     }
     return event 
 
-@app.route('/update-events')
+@app.route('/update-events') 
 def update_events():
     flask.flash("this feature isn't available yet")
     return flask.redirect('/homepage')
-
-@app.route('/assign-tiers')
-def assign_tiers():
-    user = crud.get_user_by_id(flask.session["user_id"])
-    occasions = crud.get_occasions_by_user(user)
-    tiers = user.tiers 
-    return flask.render_template("contacts-and-tiers.html", occasions = occasions, tiers=tiers)
 
 def application_user_login():
     """Parse user details from oauth and handle application database user login"""

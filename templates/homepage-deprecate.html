@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Occasion Reminders{% endblock %}
+
+{% block body %}
+Welcome! <br>
+
+<a href="/manage-tiers">Manage tiers</a><br>
+
+{% if has_imported %}
+<!--- room for improvement (incremental load?)-->
+You've already imported your contacts! Your Google contacts should remain your 
+source of truth, so if you'd like to reimport to update with any changes made there, 
+you can refresh below: 
+<a href="/clear-contacts">Refresh contacts</a><br> 
+{% else %}
+<a href="/import-contacts">Import contacts</a><br> 
+{% endif %}
+<a href="/assign-tiers">Assign tiers</a><br>
+
+<a href="/sync-events">Calendar integration</a><br>
+
+<a href="/testing-with-react">REACT!!</a><br>
+
+<a href="/alt-homepage-testing">check it outtt</a><br>
+
+{% endblock %}
