@@ -82,14 +82,15 @@ def display_logged_in_homepage():
 @app.route('/update-tier', methods = ['POST']) 
 def update_tier():
     """Update a tier on an occasion."""
-    occasion_id = flask.request.json["occasion_id"]
-    tier_id = flask.request.json["tier_id"]
-    crud.update_tier(occasion_id, tier_id)
+    occasion_ids = flask.request.json["occasion_ids"]
+    tier_id = int(flask.request.json["tier_id"])
+    for occasion_id in occasion_ids:
+        crud.update_tier(occasion_id, tier_id)
     db.session.commit()
     name = crud.get_tier_name_by_id(tier_id)
     return {
         "success": True,
-        "tier_name": name}
+        "tier_name": name} #something weird hapening with sort order
 
 @app.route('/add-tier', methods = ['POST']) 
 def add_tier():
@@ -171,9 +172,9 @@ def approve_deny():
 @app.route('/add-preview') 
 def events_preview():
     user = crud.get_user_by_id(flask.session["user_id"])
-    tiered_occasions = crud.get_tiered_occasions_by_user(user) # need to add user feedback 
+    tiered_occasions = crud.get_tiered_occasions_by_user(user) 
     events = []
-    for occasion in tiered_occasions: #what is the list of occasions that needs an event? dirty flag?
+    for occasion in tiered_occasions: 
         events.append(create_event(occasion))
     return flask.render_template('preview.html', events = events)
 
