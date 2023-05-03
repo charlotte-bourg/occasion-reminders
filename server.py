@@ -87,10 +87,39 @@ def update_tier():
     for occasion_id in occasion_ids:
         crud.update_tier(occasion_id, tier_id)
     db.session.commit()
-    name = crud.get_tier_name_by_id(tier_id)
+    name = crud.get_tier_by_id(tier_id).name
     return {
         "success": True,
         "tier_name": name} #something weird hapening with sort order
+
+
+@app.route('/tier-in-use') 
+def check_tier_usage():
+    """Check if tier is in use anywhere to allow user to confirm deletion."""
+    tier_id = int(flask.request.args.get("tier_id"))
+    print(f"YOUR TIER ID IS ***{tier_id}")
+    if crud.occasions_with_tier(tier_id):
+        return {"in_use": True}
+    else:
+        return {"in_use": False}
+
+@app.route('/delete-tier', methods = ['POST']) 
+def delete_tier():
+    """Delete a tier."""
+    tier_id = int(flask.request.json["tier_id"])
+    occasions = crud.get_occasions_by_tier(tier_id)
+    occasion_ids = []
+    for occasion in occasions:
+        crud.update_tier(occasion.occasion_id, None)
+        occasion_ids.append(occasion.occasion_id)
+    tier = crud.get_tier_by_id(tier_id)
+    db.session.delete(tier)
+    db.session.commit()
+    return {
+        "success": True, 
+        "occasion_ids": occasion_ids,
+        "tier_id": tier_id
+    }
 
 @app.route('/add-tier', methods = ['POST']) 
 def add_tier():
@@ -132,7 +161,8 @@ def import_contacts():
     results = contacts_service.people().connections().list(
         resourceName='people/me',
         pageSize=1000,
-        personFields='names,birthdays,events,memberships').execute()
+        personFields='names,birthdays,events,memberships',
+        requestSyncToken=True).execute()
     connections = results.get('connections', [])
     for person in connections:
         fname = person["names"][0]["givenName"] #todo can there be multiple names? 
@@ -143,6 +173,8 @@ def import_contacts():
         occasion = crud.create_occasion(contact, "birthday", True, birthday)
         db.session.add(contact)
         db.session.add(occasion)
+    nextSyncToken=results.get('nextSyncToken',"")
+    print(nextSyncToken)
     db.session.commit() 
     contacts_service.close() #todo close other sessions
     user.last_contact_import = datetime.now()
@@ -193,6 +225,29 @@ def add_events():
     calendar_service.close()
     return flask.render_template('events.html', added_events=added_events)
 
+# @app.route('/export-contacts')
+# def export_preview():
+#     user = crud.get_user_by_id(flask.session["user_id"])
+#     credentials = Credentials(**flask.session['credentials'])
+#     contacts_service = build('people', 'v1', credentials = credentials)
+#     results = contacts_service.people().connections().list(
+#         resourceName='people/me',
+#         pageSize=1000,
+#         personFields='names,birthdays,events,memberships',
+#         requestSyncToken=True).execute()
+#     connections = results.get('connections', [])
+#     for person in connections:
+#         fname = person["names"][0]["givenName"] #todo can there be multiple names? 
+#         lname = person["names"][0]["familyName"]
+#         birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
+#         birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
+#         contact = crud.create_contact(user, fname, lname)
+#         occasion = crud.create_occasion(contact, "birthday", True, birthday)
+#         db.session.add(contact)
+#         db.session.add(occasion)
+#     nextSyncToken=results.get('nextSyncToken',"")
+#     print(nextSyncToken)
+
 def create_event(occasion):
     tier = occasion.tier
     if occasion.recurring: 
@@ -200,7 +255,7 @@ def create_event(occasion):
     occasion_date_curr_yr = occasion.date.replace(year = datetime.now().year)
     event = { #to update when non-bday occasions are added
         'summary': f'{occasion.contact.fname} {occasion.contact.lname}\'s {occasion.occasion_type}',
-        'description': f'Added by Hackbright Occasion Reminders! Contact group: {occasion.tier.name}',
+        'description': f'Added by Hackbright Occasion Reminders! Notification group: {occasion.tier.name}',
         'start': {
             'date': occasion_date_curr_yr.strftime('%Y-%m-%d'),
             'timeZone': 'America/Los_Angeles',

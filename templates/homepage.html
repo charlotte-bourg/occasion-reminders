@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}Occasion Reminders{% endblock %}
-{% block head %}<link red="stylesheet" href="tablesort.css">{% endblock %}
+{% block head %}<link red="stylesheet" href="tablesort.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">{% endblock %}
 {% block body %}
 
 <a href="/sync-events">Sync your reminders to your calendar</a><br><br>
 
-<b>Add contact groups:</b> <br>
+<b>Add notification groups:</b> <br>
 <form id="new-tier" method="post"> <!-- ajax...?-->
   Name:<input type="text" id="tier-name" name="tier-name"><br> <!-- help text, required fields, data validation / sanitizing -->
   Description:<input type="text" id="tier-desc" name="tier-desc"><br>
@@ -20,20 +21,23 @@
 <br>
 <br>
 {% if not tiers %}
-  You haven't added any contact groups yet! 
+  You haven't added any notification groups yet! 
 {% endif %} 
-<table id="groups">
+<table id="tiers-table">
     {% if tiers %}
     <tr>
-      <th>Contact Group Name</th>
+      <th></th>
+      <th>Notification Group Name</th>
       <th>Description</th>
       <th>Reminder timeline (days ahead)</th>
       <th>Reminder type</th>
     </tr>
     {% endif %}
     {% for tier in tiers %}
-    <tr>
-      <td>{{ tier.name }}</td>
+    <tr id=tier_row_{{ tier.tier_id }}>
+      <td><button type="button" id="{{ tier.tier_id }}" class="del-tier"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+      </svg></i></button></td><td>{{ tier.name }}</td>
       <td>{{ tier.description }}</td>
       <td>{{ tier.reminder_days_ahead }}</td>
       <td>{{ tier.reminder_type }}</td>
@@ -41,6 +45,9 @@
     {% endfor %}
 </table>
 <br>
+
+<b>Sync notification groups to your google contacts:</b>
+<a href="/export-contacts">Export contacts</a><br> 
 <b>Update contacts:</b><br>
 {% if has_imported %}
 <!--- room for improvement (incremental load?)-->
@@ -53,7 +60,7 @@ you can refresh below:
 {% endif %}
 <br>
 
-<b>Contact Group</b>
+<b>Notification Group</b>
 <form class="upd-tier">
   <select name="tier-dropdown" id="tier-dropdown" method="POST">
   {% for tier in tiers %}
@@ -69,7 +76,7 @@ you can refresh below:
       <th>Last Name</th>
       <th>Occasion Type</th>
       <th>Occasion Date</th>
-      <th>Contact Group</th>
+      <th>Notification Group</th>
     </tr>
     {% for occasion in occasions %}
     <tr>
@@ -83,7 +90,6 @@ you can refresh below:
     </tr>
     {% endfor %}
 </table>
-<script src = "/static/associate-tiers.js"></script>
 <script src="/static/tiers.js"> </script> 
 <script src="/static/sort-and-filter.js"> </script> 
 {% endblock %}
