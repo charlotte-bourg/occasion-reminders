@@ -1,4 +1,5 @@
 'use strict';
 
-const table = document.querySelector('#groups');
-//const sortInput = document.querySelector('#');
+let table = new DataTable('#tiers-table', {
+    // options
+});

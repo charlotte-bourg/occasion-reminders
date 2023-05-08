@@ -92,12 +92,10 @@ def update_tier():
         "success": True,
         "tier_name": name} #something weird hapening with sort order
 
-
 @app.route('/tier-in-use') 
 def check_tier_usage():
     """Check if tier is in use anywhere to allow user to confirm deletion."""
     tier_id = int(flask.request.args.get("tier_id"))
-    print(f"YOUR TIER ID IS ***{tier_id}")
     if crud.occasions_with_tier(tier_id):
         return {"in_use": True}
     else:
@@ -152,6 +150,22 @@ def clear_occasions_and_contacts():
     db.session.commit()
     return flask.redirect('/import-contacts')
 
+
+@app.route('/update-contacts') 
+def update_contacts():
+    """"WIP"""
+
+    user = crud.get_user_by_id(flask.session["user_id"])
+    
+    # occasions = crud.get_occasions_by_user(user)
+    # contacts = crud.get_contacts_by_user(user)
+    # for occasion in occasions:
+    #     db.session.delete(occasion)
+    # for contact in contacts:
+    #     db.session.delete(contact)
+    # db.session.commit()
+    return flask.redirect('/import-contacts')
+
 @app.route('/import-contacts')
 def import_contacts():
     """Import contacts from user's Google contacts."""
@@ -164,12 +178,17 @@ def import_contacts():
         personFields='names,birthdays,events,memberships',
         requestSyncToken=True).execute()
     connections = results.get('connections', [])
+    sync_token = results.get('nextSyncToken', "")
+    user.last_sync_token = sync_token
+    print(f"YOUR SYNC TOKEN ISSS *** {sync_token}")
     for person in connections:
         fname = person["names"][0]["givenName"] #todo can there be multiple names? 
-        lname = person["names"][0]["familyName"]
+        lname = person["names"][0]["familyName"] #handle null case 
         birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
         birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
         contact = crud.create_contact(user, fname, lname)
+        resource_name = person["resourceName"]
+        contact.resource_name = resource_name 
         occasion = crud.create_occasion(contact, "birthday", True, birthday)
         db.session.add(contact)
         db.session.add(occasion)
@@ -225,28 +244,32 @@ def add_events():
     calendar_service.close()
     return flask.render_template('events.html', added_events=added_events)
 
-# @app.route('/export-contacts')
-# def export_preview():
-#     user = crud.get_user_by_id(flask.session["user_id"])
-#     credentials = Credentials(**flask.session['credentials'])
-#     contacts_service = build('people', 'v1', credentials = credentials)
-#     results = contacts_service.people().connections().list(
-#         resourceName='people/me',
-#         pageSize=1000,
-#         personFields='names,birthdays,events,memberships',
-#         requestSyncToken=True).execute()
-#     connections = results.get('connections', [])
-#     for person in connections:
-#         fname = person["names"][0]["givenName"] #todo can there be multiple names? 
-#         lname = person["names"][0]["familyName"]
-#         birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
-#         birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
-#         contact = crud.create_contact(user, fname, lname)
-#         occasion = crud.create_occasion(contact, "birthday", True, birthday)
-#         db.session.add(contact)
-#         db.session.add(occasion)
-#     nextSyncToken=results.get('nextSyncToken',"")
-#     print(nextSyncToken)
+@app.route('/export-contacts')
+def export_preview():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    tiered_occasions = crud.get_tiered_occasions_by_user(user) 
+    sync_token = user.last_sync_token
+    credentials = Credentials(**flask.session['credentials'])
+    contacts_service = build('people', 'v1', credentials = credentials)
+
+    results = contacts_service.people().connections().list(
+        syncToken=sync_token,
+        resourceName='people/me',
+        pageSize=1000,
+        personFields='names,birthdays,events,memberships',
+        requestSyncToken=True).execute()
+    connections = results.get('connections', [])
+    for person in connections:
+        fname = person["names"][0]["givenName"] #todo can there be multiple names? 
+        lname = person["names"][0]["familyName"]
+        birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
+        birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
+        contact = crud.create_contact(user, fname, lname)
+        occasion = crud.create_occasion(contact, "birthday", True, birthday)
+        db.session.add(contact)
+        db.session.add(occasion)
+    nextSyncToken=results.get('nextSyncToken',"")
+    print(nextSyncToken)
 
 def create_event(occasion):
     tier = occasion.tier

@@ -57,6 +57,9 @@ def get_occasions_by_tier(tier_id):
     #return db.session.query(Occasion).join(Contact).filter(Contact.user == user).all()
     return Occasion.query.filter(Occasion.tier_id == tier_id).all()
 
+def get_in_use_tiers_by_user(user):
+    return db.session.query(Tier).join(Occasion).filter(Tier.user == user).all()
+
 def get_tiered_occasions_by_user(user):
     """Return all of a user's occasions that have tiers."""
     return db.session.query(Occasion).join(Contact).filter(Contact.user == user, Occasion.tier != None).all()
