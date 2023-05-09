@@ -2,7 +2,7 @@
 {% block title %}Occasion Reminders{% endblock %}
 
 {% block body %}
-Successfully added the following contacts: 
+Successfully added the following occasions: 
 
 <table>
     <tr>
@@ -10,7 +10,6 @@ Successfully added the following contacts:
       <th>Last Name</th>
       <th>Occasion Type</th>
       <th>Occasion Date</th>
-      <th>Notification Tier</th>
     </tr>
     {% for occasion in occasions %}
     <tr>
@@ -18,7 +17,6 @@ Successfully added the following contacts:
       <td>{{ occasion.contact.lname }}</td>
       <td>{{ occasion.occasion_type }}</td>
       <td>{{ occasion.date }}</td>
-      <td>{{ occasion.tier.name }}</td>
     </tr>
     {% endfor %}
 </table>

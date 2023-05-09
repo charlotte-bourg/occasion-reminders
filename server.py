@@ -29,6 +29,28 @@ CLIENT_SECRETS_FILE = 'client_secret.json'
 
 #consider implementing a decorator to check if the user is logged in
 
+# def login_required(f):
+#     def wrapper():
+#         print("#####HEY###########")
+#         f()
+#     return wrapper
+
+# def login_required(alidation_func):
+#     def decorator(f):
+#         @flask.wraps(f)
+#         def decorated_function(*args, **kws):
+#             api_token = request.headers.get('Authorization')
+#             is_valid_api_token = validation_func(api_token)
+#             if is_valid_api_token:
+#                 return f(*args, **kws)
+
+#             return 'Invalid API Token', 401
+
+#         return decorated_function
+
+#     return decorator
+
+
 @app.route('/')
 def index():
     """Display pre-login page."""
@@ -39,7 +61,7 @@ def clear_session_vars():
     """Log out."""
     flask.session.clear()#revoke google permissions? 
     return flask.redirect('/')
-    
+
 @app.route('/authenticate')
 def google_authenticate():
     """Authenticate using oauth with user Google account."""
@@ -69,6 +91,7 @@ def oauthcallback():
     return flask.redirect('/homepage')
 
 @app.route('/homepage')
+#@login_required
 def display_logged_in_homepage():
     """Display logged in homepage."""
     user = crud.get_user_by_id(flask.session["user_id"])
@@ -166,34 +189,43 @@ def update_contacts():
     # db.session.commit()
     return flask.redirect('/import-contacts')
 
-@app.route('/import-contacts')
+@app.route('/import-contacts') # fix refreshing this page when you land on contacts 
 def import_contacts():
     """Import contacts from user's Google contacts."""
+    if "user_id" not in flask.session:
+        flask.flash("Please log in to access this page!")
+        return flask.redirect('/')
     user = crud.get_user_by_id(flask.session["user_id"])
     credentials = Credentials(**flask.session['credentials'])
     contacts_service = build('people', 'v1', credentials = credentials)
     results = contacts_service.people().connections().list(
         resourceName='people/me',
         pageSize=1000,
-        personFields='names,birthdays,events,memberships',
+        personFields='names,birthdays,events,memberships,events',
         requestSyncToken=True).execute()
     connections = results.get('connections', [])
     sync_token = results.get('nextSyncToken', "")
     user.last_sync_token = sync_token
-    print(f"YOUR SYNC TOKEN ISSS *** {sync_token}")
     for person in connections:
         fname = person["names"][0]["givenName"] #todo can there be multiple names? 
         lname = person["names"][0]["familyName"] #handle null case 
-        birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
-        birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
         contact = crud.create_contact(user, fname, lname)
+        db.session.add(contact)
         resource_name = person["resourceName"]
         contact.resource_name = resource_name 
-        occasion = crud.create_occasion(contact, "birthday", True, birthday)
-        db.session.add(contact)
-        db.session.add(occasion)
-    nextSyncToken=results.get('nextSyncToken',"")
-    print(nextSyncToken)
+        birthday_json = person["birthdays"][0]["date"] #todo can there be multiple birthdays
+        birthday = datetime(birthday_json["year"], birthday_json["month"], birthday_json["day"]) #todo account for missing data
+        bday = crud.create_occasion(contact, "birthday", True, birthday)
+        db.session.add(bday)
+        events_json = person.get("events","")
+        if events_json:
+            for event in events_json:
+                if event['type'] == 'anniversary':
+                    anni_date = event['date']
+                    anniversary = datetime(anni_date["year"], anni_date["month"], anni_date["day"])
+                    anni = crud.create_occasion(contact, "anniversary", True, anniversary)
+                    print(f"hey I added {fname}'s anni, {anni}")
+                    db.session.add(anni)
     db.session.commit() 
     contacts_service.close() #todo close other sessions
     user.last_contact_import = datetime.now()
@@ -334,9 +366,24 @@ def credentials_to_dict(credentials): #https://developers.google.com/identity/pr
     # ACTION ITEM for developers:
     #     Store user's access and refresh tokens in your data store if
     #     incorporating this code into your real app.
+@app.route('/revoke')
+def revoke_permissions():
+    #check if credentials in session 
+    credentials = Credentials(**flask.session['credentials'])
+    revoke = requests.post('https://oauth2.googleapis.com/revoke',
+        params={'token': credentials.token},
+        headers = {'content-type': 'application/x-www-form-urlencoded'})
+
+    status_code = getattr(revoke, 'status_code')
+    if status_code == 200:
+        flask.flash("Credentials successfully revoked.")
+        flask.redirect('/')
+    else:
+        flask.flash("An error occurred.")
+        return flask.redirect('/')
 
 if __name__ == "__main__":
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1' #TODO disable for prodution
     connect_to_db(app)
-    app.run(host="0.0.0.0", port = 5050, debug=True)
+    app.run(host="0.0.0.0", port = 5050) #, debug=True
     app.app_context().push()
