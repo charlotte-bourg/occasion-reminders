@@ -1,0 +1,19 @@
+#remainder{
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    /* flex-grow: 1;  */
+    height: calc(100% - 38px);
+    width:100%;
+    flex-wrap: wrap
+} 
+#header{
+    display: flex;
+    justify-content: flex-end;
+    height: max-content;
+    width: 100%
+} 
+body{
+    background-image: url('/static/space.jpg');
+    height: 100vh;
+}

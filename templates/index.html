@@ -1,15 +1,20 @@
 {% extends 'base.html' %}
 {% block title %}Occasion Reminders{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/index.css">
+{% endblock %}
 
 {% block body %}
-Welcome to occasion reminders! To begin, authenticate with your google account to sync your contacts: 
-<br>
-<a href = "/authenticate">Authenticate with Google</a> 
-<br><br>
-<a href ="/logout">Log out</a>
-<!-- this needs to be further implemented: only a tool during testing to clear flask session-->
-
-<script>
-
-</script>
+    <div id="header" class="d-flex justify-content-end">
+        <a href="/login" id="login" class="btn btn-primary">Log In</a>
+    </div>
+    <div id="remainder">
+        <div class="card">
+            <div class="card-body text-center">
+                Head in space? Perpetually a couple days late on sending a birthday gift to your friends? 
+                <br><br>
+                <a href="/login" class="btn btn-primary">Come back down to Earth with Occasion Reminders</a>
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -56,6 +56,10 @@ def index():
     """Display pre-login page."""
     return flask.render_template('index.html')
 
+@app.route('/login')
+def login():
+    return flask.render_template('login.html')
+
 @app.route('/logout')
 def clear_session_vars():
     """Log out."""
