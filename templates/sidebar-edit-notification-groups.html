@@ -1,4 +1,4 @@
-{% extends 'testing.html' %}
+{% extends 'sidebar-homepage.html' %}
     {% block maincontent %}
 <b>Add notification groups:</b> <br>
 <form id="new-tier" method="post"> 
@@ -17,7 +17,7 @@
 {% if not tiers %}
   You haven't added any notification groups yet! 
 {% endif %} 
-<table id="tiers-table">
+<table id="tiers-table" class="table">
 <!-- handle case with none -->
     <thead>
       <tr>
@@ -42,4 +42,5 @@
     </tbody>
     {% endfor %}
 </table>
+<script src="/static/add-groups.js"> </script> 
 {% endblock %}

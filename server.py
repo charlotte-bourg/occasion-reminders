@@ -27,30 +27,6 @@ SCOPES = ['https://www.googleapis.com/auth/contacts.readonly',
                 'openid'] #https://github.com/requests/requests-oauthlib/issues/387
 CLIENT_SECRETS_FILE = 'client_secret.json'
 
-#consider implementing a decorator to check if the user is logged in
-
-# def login_required(f):
-#     def wrapper():
-#         print("#####HEY###########")
-#         f()
-#     return wrapper
-
-# def login_required(alidation_func):
-#     def decorator(f):
-#         @flask.wraps(f)
-#         def decorated_function(*args, **kws):
-#             api_token = request.headers.get('Authorization')
-#             is_valid_api_token = validation_func(api_token)
-#             if is_valid_api_token:
-#                 return f(*args, **kws)
-
-#             return 'Invalid API Token', 401
-
-#         return decorated_function
-
-#     return decorator
-
-
 @app.route('/')
 def index():
     """Display pre-login page."""
@@ -63,7 +39,7 @@ def login():
 @app.route('/logout')
 def clear_session_vars():
     """Log out."""
-    flask.session.clear()#revoke google permissions? 
+    flask.session.clear()
     return flask.redirect('/')
 
 @app.route('/authenticate')
@@ -94,27 +70,14 @@ def oauthcallback():
     application_user_login() 
     return flask.redirect('/home')
 
-# @app.route('/homepage')
-# #@login_required
-# def display_logged_in_homepage():
-#     """Display logged in homepage."""
-#     user = crud.get_user_by_id(flask.session["user_id"])
-#     occasions = crud.get_occasions_by_user(user)
-#     tiers = user.tiers 
-#     return flask.render_template('homepage.html', 
-#                                  occasions=occasions, 
-#                                  tiers=tiers,
-#                                  has_imported = crud.user_has_local_contacts(user))
-
-@app.route('/import-contacts')
-#@login_required
+@app.route('/import-occasions-from-contacts')
 def display_import_contacts():
     """Display logged in homepage."""
     user = crud.get_user_by_id(flask.session["user_id"])
     occasions = crud.get_occasions_by_user(user)
     tiers = user.tiers 
     return flask.render_template('sidebar-import-contacts.html', 
-                                 user= user,
+                                 user=user,
                                  occasions=occasions, 
                                  tiers=tiers,
                                  has_imported = crud.user_has_local_contacts(user))
@@ -287,14 +250,14 @@ def import_contacts():
                     print(f"hey I added {fname}'s anni, {anni}")
                     db.session.add(anni)
     db.session.commit() 
-    contacts_service.close() #todo close other sessions
+    contacts_service.close() 
     user.last_contact_import = datetime.now()
-    occasions = crud.get_occasions_by_user(user)
-    return flask.render_template("contacts.html", occasions = occasions)
+    flask.flash("Successfully reimported your contacts!")
+    return flask.redirect('/import-occasions-from-contacts')
     
-@app.route('/sync-events')
-def sync_events():
-    return flask.render_template('sync.html')
+# @app.route('/update-calendar-reminders')
+# def display_update_calendar_reminders():
+#     return flask.render_template('sidebar_update_calendar_reminders.html')
 
 @app.route('/edit-method')
 def select_method():
@@ -328,7 +291,7 @@ def add_events():
     credentials = Credentials(**flask.session['credentials']) #todo modularize building service 
     calendar_service = build('calendar', 'v3', credentials = credentials)
     added_events = []
-    for occasion in tiered_occasions: #what is the list of occasions that needs an event? dirty flag?
+    for occasion in tiered_occasions:
         event = create_event(occasion)
         event = calendar_service.events().insert(calendarId='primary', body=event).execute()
         print(event)
@@ -368,7 +331,7 @@ def create_event(occasion):
     if occasion.recurring: 
         recurrence_rule = 'RRULE:FREQ=YEARLY'
     occasion_date_curr_yr = occasion.date.replace(year = datetime.now().year)
-    event = { #to update when non-bday occasions are added
+    event = {
         'summary': f'{occasion.contact.fname} {occasion.contact.lname}\'s {occasion.occasion_type}',
         'description': f'Added by Hackbright Occasion Reminders! Notification group: {occasion.tier.name}',
         'start': {
@@ -417,7 +380,7 @@ def application_user_login():
 @app.route('/home')
 def sidebar_page():
     user = crud.get_user_by_id(flask.session["user_id"])
-    return flask.render_template("testing.html", user=user)
+    return flask.render_template("sidebar-homepage.html", user=user)
 
 def credentials_to_dict(credentials): #https://developers.google.com/identity/protocols/oauth2/web-server#python
     """Parse credentials into dictionary format for session"""
@@ -427,10 +390,6 @@ def credentials_to_dict(credentials): #https://developers.google.com/identity/pr
             'client_id': credentials.client_id,
             'client_secret': credentials.client_secret,
             'scopes': credentials.scopes}
-    # TODO Store the credentials in the session.
-    # ACTION ITEM for developers:
-    #     Store user's access and refresh tokens in your data store if
-    #     incorporating this code into your real app.
     
 @app.route('/revoke')
 def revoke_permissions():
@@ -449,7 +408,7 @@ def revoke_permissions():
         return flask.redirect('/')
 
 if __name__ == "__main__":
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1' #TODO disable for prodution
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     connect_to_db(app)
-    app.run(host="0.0.0.0", port = 5050) #, debug=True
+    app.run(host="0.0.0.0", port = 5050)
     app.app_context().push()

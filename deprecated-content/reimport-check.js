@@ -2,7 +2,7 @@
 
 const importContactsLink = document.querySelector('#imp-cont')
 button.addEventListener('click', () =>{
-    
+});
     
 //     if ("contacts_imported" not in flask.session):
 //         prompt("no!");

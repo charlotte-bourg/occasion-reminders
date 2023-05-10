@@ -1,4 +1,4 @@
-{% extends 'testing.html' %}
+{% extends 'sidebar-homepage.html' %}
     {% block maincontent %}
     <b>Notification Group</b>
     <form class="upd-tier">
@@ -9,7 +9,7 @@
       </select>
       <input type="submit" ><!--don't allow submitting if no boxes are checked?-->
     </form>
-    <table id="occasions-and-tiers">
+    <table id="occasions-and-tiers" class="table">
         <tr>
           <th>Update Group?</th>
           <th>First Name</th>
@@ -30,4 +30,5 @@
         </tr>
         {% endfor %}
     </table>
+<script src="/static/update-groups.js"> </script> 
 {% endblock %}

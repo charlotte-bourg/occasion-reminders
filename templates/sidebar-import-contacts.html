@@ -1,13 +1,35 @@
-{% extends 'testing.html' %}
+{% extends 'sidebar-homepage.html' %}
     {% block maincontent %}
         {% if has_imported %}
         <!--- room for improvement (incremental load?)-->
-        Welcome back! You've already imported your contacts! Your Google contacts should remain your 
+        <b>Import Status:</b> you've already imported your contacts! 
+        <br>
+        Your Google contacts should remain your 
         source of truth, so if you'd like to reimport to update with any changes made there, 
         you can refresh below: 
         <br><br>
         <a href="/clear-contacts">Refresh contacts</a><br> 
     {% else %}
-        <a href="/import-contacts">Import contacts</a><br> 
+        <b>Import Status:</b> not imported 
+        <a href="/import-contacts-helper">Import contacts</a><br> 
     {% endif %}
+    <br><br>
+    <b>Your occasions from contacts</b>
+    <br>
+    <table class="table">
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Occasion Type</th>
+          <th>Occasion Date</th>
+        </tr>
+        {% for occasion in occasions %}
+        <tr>
+          <td>{{ occasion.contact.fname }}</td>
+          <td>{{ occasion.contact.lname }}</td>
+          <td>{{ occasion.occasion_type }}</td>
+          <td>{{ occasion.date }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 {% endblock %}
