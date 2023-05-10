@@ -92,19 +92,19 @@ def oauthcallback():
     credentials = flow.credentials
     flask.session['credentials'] = credentials_to_dict(credentials)
     application_user_login() 
-    return flask.redirect('/homepage')
+    return flask.redirect('/home')
 
-@app.route('/homepage')
-#@login_required
-def display_logged_in_homepage():
-    """Display logged in homepage."""
-    user = crud.get_user_by_id(flask.session["user_id"])
-    occasions = crud.get_occasions_by_user(user)
-    tiers = user.tiers 
-    return flask.render_template('homepage.html', 
-                                 occasions=occasions, 
-                                 tiers=tiers,
-                                 has_imported = crud.user_has_local_contacts(user))
+# @app.route('/homepage')
+# #@login_required
+# def display_logged_in_homepage():
+#     """Display logged in homepage."""
+#     user = crud.get_user_by_id(flask.session["user_id"])
+#     occasions = crud.get_occasions_by_user(user)
+#     tiers = user.tiers 
+#     return flask.render_template('homepage.html', 
+#                                  occasions=occasions, 
+#                                  tiers=tiers,
+#                                  has_imported = crud.user_has_local_contacts(user))
 
 @app.route('/import-contacts')
 #@login_required
@@ -114,6 +114,7 @@ def display_import_contacts():
     occasions = crud.get_occasions_by_user(user)
     tiers = user.tiers 
     return flask.render_template('sidebar-import-contacts.html', 
+                                 user= user,
                                  occasions=occasions, 
                                  tiers=tiers,
                                  has_imported = crud.user_has_local_contacts(user))
@@ -124,6 +125,40 @@ def display_edit_notification_groups():
     occasions = crud.get_occasions_by_user(user)
     tiers = user.tiers 
     return flask.render_template('sidebar-edit-notification-groups.html', 
+                                 user=user,
+                                 occasions=occasions, 
+                                 tiers=tiers,
+                                 has_imported = crud.user_has_local_contacts(user))
+
+@app.route('/apply-notification-groups')
+def display_apply_notification_groups():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    occasions = crud.get_occasions_by_user(user)
+    tiers = user.tiers 
+    return flask.render_template('sidebar-apply-notification-groups.html', 
+                                 user=user,
+                                 occasions=occasions, 
+                                 tiers=tiers,
+                                 has_imported = crud.user_has_local_contacts(user))
+
+@app.route('/update-calendar-reminders')
+def display_update_calendar_reminders():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    occasions = crud.get_occasions_by_user(user)
+    tiers = user.tiers 
+    return flask.render_template('sidebar-update-calendar-reminders.html', 
+                                 user=user,
+                                 occasions=occasions, 
+                                 tiers=tiers,
+                                 has_imported = crud.user_has_local_contacts(user))
+
+@app.route('/export-reminder-tags')
+def display_export_reminder_tags():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    occasions = crud.get_occasions_by_user(user)
+    tiers = user.tiers 
+    return flask.render_template('sidebar-export-reminder-tags.html', 
+                                 user=user,
                                  occasions=occasions, 
                                  tiers=tiers,
                                  has_imported = crud.user_has_local_contacts(user))
@@ -379,9 +414,10 @@ def application_user_login():
     flask.session["user_id"] = user.user_id
     return 
 
-@app.route('/testing-sidebars')
+@app.route('/home')
 def sidebar_page():
-    return flask.render_template("testing.html")
+    user = crud.get_user_by_id(flask.session["user_id"])
+    return flask.render_template("testing.html", user=user)
 
 def credentials_to_dict(credentials): #https://developers.google.com/identity/protocols/oauth2/web-server#python
     """Parse credentials into dictionary format for session"""

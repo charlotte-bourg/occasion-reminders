@@ -1,0 +1,33 @@
+{% extends 'testing.html' %}
+    {% block maincontent %}
+    <b>Notification Group</b>
+    <form class="upd-tier">
+      <select name="tier-dropdown" id="tier-dropdown" method="POST">
+      {% for tier in tiers %}
+        <option value="{{ tier.tier_id }}">{{ tier.name }}</option> <!--disable the one that is already selected..?-->
+      {% endfor %}
+      </select>
+      <input type="submit" ><!--don't allow submitting if no boxes are checked?-->
+    </form>
+    <table id="occasions-and-tiers">
+        <tr>
+          <th>Update Group?</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Occasion Type</th>
+          <th>Occasion Date</th>
+          <th>Notification Group</th>
+        </tr>
+        {% for occasion in occasions %}
+        <tr>
+          <td><input type="checkbox" id="{{ occasion.occasion_id }}"></td>  <!--do i have to manually implement shift+click? -->
+          <td>{{ occasion.contact.fname }}</td>
+          <td>{{ occasion.contact.lname }}</td>
+          <td>{{ occasion.occasion_type }}</td>
+          <td>{{ occasion.date }}</td>
+          <td><span class=tier_name_{{ occasion.occasion_id }}>{{ occasion.tier.name }}</span></td>
+          <!--<td><button type="button" id="{{ occasion.occasion_id }}" class="upd-tier">Update contact group</button></td>-->
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
