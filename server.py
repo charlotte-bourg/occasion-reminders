@@ -106,6 +106,28 @@ def display_logged_in_homepage():
                                  tiers=tiers,
                                  has_imported = crud.user_has_local_contacts(user))
 
+@app.route('/import-contacts')
+#@login_required
+def display_import_contacts():
+    """Display logged in homepage."""
+    user = crud.get_user_by_id(flask.session["user_id"])
+    occasions = crud.get_occasions_by_user(user)
+    tiers = user.tiers 
+    return flask.render_template('sidebar-import-contacts.html', 
+                                 occasions=occasions, 
+                                 tiers=tiers,
+                                 has_imported = crud.user_has_local_contacts(user))
+
+@app.route('/edit-notification-groups')
+def display_edit_notification_groups():
+    user = crud.get_user_by_id(flask.session["user_id"])
+    occasions = crud.get_occasions_by_user(user)
+    tiers = user.tiers 
+    return flask.render_template('sidebar-edit-notification-groups.html', 
+                                 occasions=occasions, 
+                                 tiers=tiers,
+                                 has_imported = crud.user_has_local_contacts(user))
+
 @app.route('/update-tier', methods = ['POST']) 
 def update_tier():
     """Update a tier on an occasion."""
@@ -175,8 +197,7 @@ def clear_occasions_and_contacts():
     for contact in contacts:
         db.session.delete(contact)
     db.session.commit()
-    return flask.redirect('/import-contacts')
-
+    return flask.redirect('/import-contacts-helper')
 
 @app.route('/update-contacts') 
 def update_contacts():
@@ -191,9 +212,9 @@ def update_contacts():
     # for contact in contacts:
     #     db.session.delete(contact)
     # db.session.commit()
-    return flask.redirect('/import-contacts')
+    return flask.redirect('/import-contacts-helper')
 
-@app.route('/import-contacts') # fix refreshing this page when you land on contacts 
+@app.route('/import-contacts-helper') # fix refreshing this page when you land on contacts 
 def import_contacts():
     """Import contacts from user's Google contacts."""
     if "user_id" not in flask.session:
@@ -358,6 +379,10 @@ def application_user_login():
     flask.session["user_id"] = user.user_id
     return 
 
+@app.route('/testing-sidebars')
+def sidebar_page():
+    return flask.render_template("testing.html")
+
 def credentials_to_dict(credentials): #https://developers.google.com/identity/protocols/oauth2/web-server#python
     """Parse credentials into dictionary format for session"""
     return {'token': credentials.token,
@@ -370,6 +395,7 @@ def credentials_to_dict(credentials): #https://developers.google.com/identity/pr
     # ACTION ITEM for developers:
     #     Store user's access and refresh tokens in your data store if
     #     incorporating this code into your real app.
+    
 @app.route('/revoke')
 def revoke_permissions():
     #check if credentials in session 

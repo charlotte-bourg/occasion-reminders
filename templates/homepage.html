@@ -11,97 +11,37 @@
 {% endblock %}
 {% block body %}
 
-
-<div id="wrapper">
-
-  <!-- Sidebar -->
-  <div id="sidebar-wrapper">
-      <ul class="sidebar-nav">
-          <li class="sidebar-brand">
-              <a href="#">
-                  Start Bootstrap
-              </a>
-          </li>
-          <li>
-              <a href="#">Dashboard</a>
-          </li>
-          <li>
-              <a href="#">Shortcuts</a>
-          </li>
-          <li>
-              <a href="#">Overview</a>
-          </li>
-          <li>
-              <a href="#">Events</a>
-          </li>
-          <li>
-              <a href="#">About</a>
-          </li>
-          <li>
-              <a href="#">Services</a>
-          </li>
-          <li>
-              <a href="#">Contact</a>
-          </li>
-      </ul>
-  </div>
-  <!-- /#sidebar-wrapper -->
-
-  <!-- Page Content -->
-  <div id="page-content-wrapper">
-      <div class="container-fluid">
-          <div class="row">
-              <div class="col-lg-12">
-                  <h1 id="this-simple-sidebar">Simple Sidebar</h1>
-                  <p>This template has a responsive menu toggling system. The menu will appear collapsed on smaller screens, and will appear non-collapsed on larger screens. When toggled using the button below, the menu will appear/disappear. On small screens, the page content will be pushed off canvas.</p>
-                  <p>Make sure to keep all page content within the <code>#page-content-wrapper</code>.</p>
-                  <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
-              </div>
-          </div>
-      </div>
-  </div>
-  <!-- /#page-content-wrapper -->
-
-</div>
-<!-- /#wrapper -->
-
-Welcome to Occasion Reminders!
-<br><br>
-<div id="accordion">
-  <div class="card">
-    <div class="card-header" id="headingOne">
-      <h5 class="mb-0">
-        <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-          Import contacts
-        </button>
-      </h5>
-    </div>
-
-    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-      <div class="card-body">
+<div class="accordion" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Import Contacts
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
         {% if has_imported %}
         <!--- room for improvement (incremental load?)-->
-        You've already imported your contacts! Your Google contacts should remain your 
+        Welcome back! You've already imported your contacts! Your Google contacts should remain your 
         source of truth, so if you'd like to reimport to update with any changes made there, 
-        you can refresh below: 
+        you can refresh below: <br>
         <a href="/clear-contacts">Refresh contacts</a><br> 
         {% else %}
         <a href="/import-contacts">Import contacts</a><br> 
         {% endif %}
+        <a href="/testing-sidebars">test sidebars</a>
         <br>
       </div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-header" id="headingTwo">
-      <h5 class="mb-0">
-        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
           Edit notification groups
         </button>
-      </h5>
-    </div>
-    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-      <div class="card-body">
+      </h2>
+      <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
         <b>Add notification groups:</b> <br>
         <form id="new-tier" method="post"> 
           Name:<input type="text" id="tier-name" name="tier-name"><br> <!-- help text, required fields, data validation / sanitizing -->
@@ -148,16 +88,14 @@ Welcome to Occasion Reminders!
       </div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-header" id="headingThree">
-      <h5 class="mb-0">
-        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-          Apply notification groups to occasions
-        </button>
-      </h5>
-    </div>
-    <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-      <div class="card-body">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+        Apply notification groups to occasions
+      </button>
+    </h2>
+    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
         <b>Notification Group</b>
         <form class="upd-tier">
           <select name="tier-dropdown" id="tier-dropdown" method="POST">
@@ -191,35 +129,37 @@ Welcome to Occasion Reminders!
       </div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-header" id="headingFour">
-      <h5 class="mb-0">
-        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
           Update Google calendar reminders
         </button>
-      </h5>
-    </div>
-    <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
-      <div class="card-body">
+      </h2>
+      <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
         <a href="/sync-events">Sync your reminders to your calendar</a><br><br> 
       </div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-header" id="headingFive">
-      <h5 class="mb-0">
-        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
           Export reminder tags to Google contacs
         </button>
-      </h5>
-    </div>
-    <div id="collapseFive" class="collapse" aria-labelledby="headingFive" data-parent="#accordion">
-      <div class="card-body">
+      </h2>
+      <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
         <a href="/export-contacts">Export contacts</a><br> 
       </div>
     </div>
   </div>
+
+  <!-- /#page-content-wrapper -->
+
 </div>
+<!-- /#wrapper -->
 
 <script src="/static/tiers.js"> </script> 
 <script src="/static/sort-and-filter.js"> </script> 
