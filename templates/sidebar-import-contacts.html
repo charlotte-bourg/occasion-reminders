@@ -1,35 +1,16 @@
 {% extends 'sidebar-homepage.html' %}
     {% block maincontent %}
-        {% if has_imported %}
-        <!--- room for improvement (incremental load?)-->
-        <b>Import Status:</b> you've already imported your contacts! 
+      {% if has_imported %}
+      <!--- room for improvement (incremental load?)-->
+        <b>Import Status:</b> last import: {{ user.last_contact_import.strftime('%Y-%m-%d at %I:%M:%S %p') }}
         <br>
         Your Google contacts should remain your source of truth, so if you'd like to reimport to update with any changes made there, you can refresh below: 
         <br><br>
         <a href="/clear-contacts">Refresh contacts</a><br> 
     {% else %}
-        <b>Import Status:</b> not imported 
+        <b>Import Status:</b> no previous imports
+        <br><br>
         <a href="/import-contacts-helper">Import contacts</a><br> 
     {% endif %}
-    <br><br>
-    Note: if you have other occasions you'd like to bulk manage your reminders for, you can add them on the Apply Notification Groups page.
-    <br>
-    <b>Your occasions from contacts</b>
-    <br>
-    <table class="table">
-        <tr>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Occasion Type</th>
-          <th>Occasion Date</th>
-        </tr>
-        {% for occasion in occasions %}
-        <tr>
-          <td>{{ occasion.contact.fname }}</td>
-          <td>{{ occasion.contact.lname }}</td>
-          <td>{{ occasion.occasion_type }}</td>
-          <td> {{ occasion.date.strftime('%Y-%m-%d') }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <!-- Note: if you have other occasions you'd like to bulk manage your reminders for, you can add them on the Apply Notification Groups page. -->
 {% endblock %}

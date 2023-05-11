@@ -17,6 +17,10 @@ from googleapiclient.errors import HttpError
 import crud
 from model import db, connect_to_db
 
+#event color (optional)
+#event deletion / updates 
+#delete by group or person
+
 app = flask.Flask(__name__)
 app.secret_key = os.environ['FLASK_KEY']
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly',
@@ -219,6 +223,9 @@ def import_contacts():
         flask.flash("Please log in to access this page!")
         return flask.redirect('/')
     user = crud.get_user_by_id(flask.session["user_id"])
+    first_time_import = False
+    if user.last_contact_import:
+        first_time_import = True
     credentials = Credentials(**flask.session['credentials'])
     contacts_service = build('people', 'v1', credentials = credentials)
     results = contacts_service.people().connections().list(
@@ -249,10 +256,10 @@ def import_contacts():
                     anni = crud.create_occasion(contact, "anniversary", True, anniversary)
                     print(f"hey I added {fname}'s anni, {anni}")
                     db.session.add(anni)
-    db.session.commit() 
     contacts_service.close() 
     user.last_contact_import = datetime.now()
-    flask.flash("Successfully reimported your contacts!")
+    db.session.commit() 
+    flask.flash("Successfully "+("re" if first_time_import else "")+"imported your occasions from Google contacts!")
     return flask.redirect('/import-occasions-from-contacts')
     
 # @app.route('/update-calendar-reminders')
