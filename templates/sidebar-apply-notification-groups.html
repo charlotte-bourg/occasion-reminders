@@ -24,7 +24,7 @@
           <td>{{ occasion.contact.fname }}</td>
           <td>{{ occasion.contact.lname }}</td>
           <td>{{ occasion.occasion_type }}</td>
-          <td>{{ occasion.date }}</td>
+          <td>{{ occasion.date.strftime('%Y-%m-%d') }}</td>
           <td><span class=tier_name_{{ occasion.occasion_id }}>{{ occasion.tier.name }}</span></td>
           <!--<td><button type="button" id="{{ occasion.occasion_id }}" class="upd-tier">Update contact group</button></td>-->
         </tr>

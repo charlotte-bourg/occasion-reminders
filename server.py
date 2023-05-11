@@ -273,7 +273,7 @@ def approve_deny():
         return flask.redirect('/add-events')
     else: 
         flask.flash("Make more edits!")
-        return flask.redirect('/homepage')
+        return flask.redirect('/home')
 
 @app.route('/add-preview') 
 def events_preview():
@@ -282,7 +282,7 @@ def events_preview():
     events = []
     for occasion in tiered_occasions: 
         events.append(create_event(occasion))
-    return flask.render_template('preview.html', events = events)
+    return flask.render_template('sidebar-preview.html', events = events, user=user)
 
 @app.route('/add-events') 
 def add_events():

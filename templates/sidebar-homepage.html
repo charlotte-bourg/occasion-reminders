@@ -181,7 +181,7 @@
   <h1 class="visually-hidden">Sidebars examples</h1>
 
   <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width: 330px;">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+    <a href="/home" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
       <svg class="bi pe-none me-2" width="40" height="32"><use xlink:href="#calendar-heart-fill"/></svg>
       <span class="fs-4">Occasion Reminders</span>
     </a>
@@ -243,7 +243,20 @@
   <div class="b-example-divider b-example-vr"></div>
 <div>
 {% block maincontent %}
-Welcome, {{ user.fname }}!
+Welcome to Occasion Reminders, {{ user.fname }}!
+<br> 
+<br>
+Bulk create & manage reminders for occasions in your life with the Gsuite tools you already use: 
+<ul> 
+<li>Import occasions like birthdays and anniversaries from your Google contacts.</li>
+
+<li>Create Notification Groups to represent the types of reminders you'd like to recieve.</li>
+
+<li>Apply those Notification Groups in bulk to the occasions you'd like to track. </li>
+
+<li>Export your reminders to your Google Calendar. </li>
+</ul>
+
 {% endblock %}
 </div>
 </main>
