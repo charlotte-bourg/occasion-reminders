@@ -12,12 +12,14 @@
     {% block head %}{% endblock %}
   </head>
   <body>
-    {% for msg in get_flashed_messages() %}
-    <p class="flash-msg">
-      {{ msg }}
-    </p>
-    {% endfor %}
-    {% block body %}{% endblock %}    
+    {% block flaskblock %}
+      {% for msg in get_flashed_messages() %}
+      <p class="flash-msg">
+        {{ msg }}
+      </p>
+      {% endfor %}
+    {% endblock %}  
+    {% block body %}{% endblock %}
     <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.js"></script>

@@ -72,3 +72,4 @@ function deleteTier(tier_id){
             }
      }); 
 };
+// this doesn't handle creating first tier or deleting last tier with ajax. 
