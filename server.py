@@ -304,7 +304,7 @@ def add_events():
         print(event)
         added_events.append({'summary':event['summary'], 'link': event['htmlLink']})
     calendar_service.close()
-    return flask.render_template('events.html', added_events=added_events)
+    return flask.render_template('events.html', user=user, added_events=added_events)
 
 @app.route('/export-contacts')
 def export_preview():

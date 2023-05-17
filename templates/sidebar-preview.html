@@ -3,29 +3,36 @@
 
 {% block maincontent %}
 The following events will be added to your calendar: 
-{% for event in events %}
-<table>
+<br>
+<table class="table">
     <tr>
       <th>Summary</th>
       <th>Description</th>
       <th>Start</th>
       <th>End</th>
       <th>Recurrence</th>
-      <th>Reminders</th>
+      <th>Reminder</th>
     </tr>
+    {% for event in events %}
     <tr>
       <td>{{ event.summary }}</td>
       <td>{{ event.description }}</td>
-      <td>{{ event.start }}</td>
-      <td>{{ event.end }}</td>
-      <td>{{ event.recurrence }}</td>
-      <td>{{ event.reminders.overrides.method }} ({{ event.reminders.overrides[0].minutes }}/(24*60)) days ahead</td>
+      <td>{{ event.start.date }}</td> 
+      <td>{{ event.end.date }}</td>
+      <td>Yearly</td>
+      <td>{{ event.reminders.overrides[0].method }} {{ (event.reminders.overrides[0].minutes/(24*60)) | round(0) | int}} days ahead</td>
+    </tr>
+    {% endfor %}
 </table>
-{% endfor %}
 <br>
-<form action = '/approve-deny'>
+<form action = '/add-events'>
     <input type="submit" name="approve" value="Send to calendar"></input>
-    <br>
-    <input type="submit" name="deny" value="Go back to make more edits"></input>
 </form>
+<script>
+(() => {
+    'use strict'
+    document.querySelector("#preview").classList.add('active')
+    console.log("HEY")
+  })()
+</script>
 {% endblock %}

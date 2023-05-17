@@ -45,4 +45,11 @@
 </table>
 {% endif %} 
 <script src="/static/add-groups.js"> </script> 
+<script>
+  (() => {
+      'use strict'
+      document.querySelector("#groups").classList.add('active')
+      console.log("HEY")
+    })()
+  </script>
 {% endblock %}

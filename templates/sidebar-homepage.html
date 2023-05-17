@@ -90,6 +90,7 @@
     
     <!-- Custom styles for this template -->
     <link href="/static/sidebars.css" rel="stylesheet">
+    <link href="/static/sidebars_local.css" rel="stylesheet">
 {% endblock %}
 {% block flaskblock %}
 {% endblock %}
@@ -190,42 +191,42 @@
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
       <li class="nav-item">
-        <a href="/home" class="nav-link active" aria-current="page">
+        <a href="/home" class="nav-link text-white" id="home">
           <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#home"/></svg>
           Home
         </a>
       </li>
       <li>
-        <a href="/import-occasions-from-contacts" class="nav-link text-white">
+        <a href="/import-occasions-from-contacts" class="nav-link text-white" id="import">
             <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#import"/></svg>
           Import occasions from contacts
         </a>
       </li>
       <li>
-        <a href="/edit-notification-groups" class="nav-link text-white">
+        <a href="/edit-notification-groups" class="nav-link text-white" id="groups">
           <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#table"/></svg>
           Edit notification groups
         </a>
       </li>
       <li>
-        <a href="/apply-notification-groups" class="nav-link text-white">
+        <a href="/apply-notification-groups" class="nav-link text-white" id="apply">
           <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#checks"/></svg>
           Apply notification groups
         </a>
       </li>
       <li>
-        <a href="/update-calendar-reminders" class="nav-link text-white">
+        <a href="/add-preview" class="nav-link text-white" id="preview">
           <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#cal"/></svg>
           Update calendar reminders
         </a>
       </li>
     </li>
-    <li>
+    <!-- <li>
       <a href="/export-reminder-tags" class="nav-link text-white">
         <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#export"/></svg>
         Export reminder tags
       </a>
-    </li>
+    </li> -->
     </ul>
     <hr>
     <div class="dropdown">
@@ -234,16 +235,16 @@
         <strong>{{ user.email }}</strong>
       </a>
       <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-        <li><a class="dropdown-item" href="#">Settings</a></li>
+        <!-- <li><a class="dropdown-item" href="#">Settings</a></li>
         <li><a class="dropdown-item" href="#">Your Activity</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="#">Sign out</a></li>
+        <li><hr class="dropdown-divider"></li> -->
+        <li><a class="dropdown-item" href="/logout">Sign out</a></li>
       </ul>
     </div>
   </div>
 
   <div class="b-example-divider b-example-vr"></div>
-<div>
+<div class="left-pad">
 {% for msg in get_flashed_messages() %}
   <p class="flash-msg">
     {{ msg }}
@@ -272,5 +273,4 @@ Bulk create & manage reminders for occasions in your life with the Gsuite tools 
     <!-- <script src="../assets/dist/js/bootstrap.bundle.min.js"></script> -->
 
       <script src="/static/sidebars.js"></script>
-
 {% endblock %}
