@@ -1,4 +1,4 @@
-{% extends 'sidebar-homepage.html' %}
+{% extends 'sidebar-base.html' %}
 {% block title %}Occasion Reminders{% endblock %}
 
 {% block maincontent %}
@@ -32,7 +32,6 @@ The following events will be added to your calendar:
 (() => {
     'use strict'
     document.querySelector("#preview").classList.add('active')
-    console.log("HEY")
   })()
 </script>
 {% endblock %}

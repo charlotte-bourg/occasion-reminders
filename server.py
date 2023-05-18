@@ -155,6 +155,7 @@ def check_tier_usage():
 @app.route('/delete-tier', methods = ['POST']) 
 def delete_tier():
     """Delete a tier."""
+    user = crud.get_user_by_id(flask.session["user_id"])
     tier_id = int(flask.request.json["tier_id"])
     occasions = crud.get_occasions_by_tier(tier_id)
     occasion_ids = []
@@ -164,10 +165,16 @@ def delete_tier():
     tier = crud.get_tier_by_id(tier_id)
     db.session.delete(tier)
     db.session.commit()
+    if user.tiers:
+        tiers = True
+    else:
+        tiers = False
+    print(f"HEYY LOOK HERE tiers is {tiers}")
     return {
         "success": True, 
         "occasion_ids": occasion_ids,
-        "tier_id": tier_id
+        "tier_id": tier_id,
+        "tiers": tiers
     }
 
 @app.route('/add-tier', methods = ['POST']) 
@@ -178,15 +185,18 @@ def add_tier():
     description = flask.request.json["tier-desc"]
     days_ahead = flask.request.json["tier-days-ahead"]
     reminder_type = flask.request.json["tier-reminder-type"]
-    tier = crud.create_tier(user, name, description, days_ahead, reminder_type,"tbd") #handle tbd
+    tier = crud.create_tier(user, name, description, days_ahead, reminder_type,"tbd")
     db.session.add(tier)
     db.session.commit()
+    tier_id = tier.tier_id
+    print(f"YOUR ID IS {tier_id}")
     return { #better way to do this than sending back and forth? might simplify out if i change to react
         "success": True,
         "tier-name": name,
         "tier-desc": description,
         "tier-days-ahead": days_ahead,
-        "tier-reminder-type": reminder_type}
+        "tier-reminder-type": reminder_type,
+        "tier-id": tier_id}
 
 @app.route('/clear-contacts') 
 def clear_occasions_and_contacts():
