@@ -22,6 +22,9 @@ document.querySelector('.upd-tier').addEventListener('submit', (evt) =>{
                  for (const occasion_id of occasion_ids){
                     document.querySelector(`span.tier_name_${occasion_id}`).innerHTML = responseData["tier_name"];
                  }
+                 for (const box of checkedBoxes){
+                    box.checked = false;
+                 }
              }
      }); 
 });

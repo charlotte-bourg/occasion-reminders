@@ -108,16 +108,16 @@ def display_apply_notification_groups():
                                  tiers=tiers,
                                  has_imported = crud.user_has_local_contacts(user))
 
-@app.route('/update-calendar-reminders')
-def display_update_calendar_reminders():
-    user = crud.get_user_by_id(flask.session["user_id"])
-    occasions = crud.get_occasions_by_user(user)
-    tiers = user.tiers 
-    return flask.render_template('sidebar-update-calendar-reminders.html', 
-                                 user=user,
-                                 occasions=occasions, 
-                                 tiers=tiers,
-                                 has_imported = crud.user_has_local_contacts(user))
+# @app.route('/update-calendar-reminders')
+# def display_update_calendar_reminders():
+#     user = crud.get_user_by_id(flask.session["user_id"])
+#     occasions = crud.get_occasions_by_user(user)
+#     tiers = user.tiers 
+#     return flask.render_template('sidebar-update-calendar-reminders.html', 
+#                                  user=user,
+#                                  occasions=occasions, 
+#                                  tiers=tiers,
+#                                  has_imported = crud.user_has_local_contacts(user))
 
 @app.route('/export-reminder-tags')
 def display_export_reminder_tags():
@@ -292,7 +292,7 @@ def approve_deny():
         flask.flash("Make more edits!")
         return flask.redirect('/home')
 
-@app.route('/add-preview') 
+@app.route('/update-calendar-reminders') 
 def events_preview():
     user = crud.get_user_by_id(flask.session["user_id"])
     tiered_occasions = crud.get_tiered_occasions_by_user(user) 

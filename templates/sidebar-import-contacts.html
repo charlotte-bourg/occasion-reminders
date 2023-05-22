@@ -1,6 +1,7 @@
 {% extends 'sidebar-base.html' %}
     {% block maincontent %}
     <h4>Import your contacts</h4>
+    <br>
       {% if has_imported %}
       <!--- room for improvement (incremental load?)-->
         <b>Import Status:</b> last import: {{ user.last_contact_import.strftime('%Y-%m-%d at %I:%M:%S %p') }}

@@ -2,11 +2,10 @@
 
 document.querySelector('#new-tier').addEventListener('submit', (evt) => {
     evt.preventDefault();
-    console.log("hey girly pop")
     const formInputs = {
         "tier-name": document.querySelector('#tier-name').value,
         "tier-desc": document.querySelector('#tier-desc').value,
-        "tier-days-ahead":document.querySelector('#tier-days-ahead').value,
+        "tier-days-ahead": document.querySelector('#tier-days-ahead').value,
         "tier-reminder-type": document.querySelector('input[name="tier-reminder-type"]:checked').value
     };
     fetch('/add-tier', {
@@ -29,9 +28,10 @@ document.querySelector('#new-tier').addEventListener('submit', (evt) => {
                     <td>${responseData["tier-days-ahead"]}</td>
                     <td>${responseData["tier-reminder-type"]}</td>
                     </tr>`);
+                document.querySelector('#new-tier').reset()
                 updateEventListeners(tier_id);
             }
-        }); // consider changes for consistent sorting?
+        }); 
 });
 
 function updateEventListeners(tier_id){
@@ -40,6 +40,7 @@ function updateEventListeners(tier_id){
         deleteCheck(evt,tier_id)
     });
 }
+
 const deleteButtons = document.querySelectorAll('.del-tier')
 for (const delButton of deleteButtons){
     delButton.addEventListener('click', function(evt){
@@ -54,8 +55,9 @@ function deleteCheck(evt, tier_id){
         .then((responseData) => {
             console.log(responseData)
             if (responseData["in_use"]){
-                const confirmed = confirm("This group is in use! Are you sure you'd like to delete it?");
-                if (confirmed){deleteTier(tier_id)}
+                const confirmationModal = new bootstrap.Modal(document.getElementById('inUseConfirmation'))
+                document.querySelector('#confirm').addEventListener('click',() => deleteTier(tier_id))
+                confirmationModal.show()
             }
             else{
                 deleteTier(tier_id)
@@ -74,17 +76,10 @@ function deleteTier(tier_id){
          .then((response) => response.json())
          .then((responseData) => {
             if (responseData["success"]){
-                console.log("the affected occasions are as follows")
-                for (const occasion_id of responseData["occasion_ids"]){
-                    console.log(occasion_id)
-                    document.querySelector(`span.tier_name_${occasion_id}`).innerHTML = "";
-                }
                 document.querySelector(`#tier_row_${tier_id}`).style.display= 'none'
                 if (!responseData["tiers"]){
-                    console.log("HEYY");
                     document.querySelector('#no-groups').removeAttribute("hidden")
                 }
             }
      }); 
 };
-// this doesn't handle creating first tier or deleting last tier with ajax. 
