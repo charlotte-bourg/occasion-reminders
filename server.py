@@ -17,10 +17,6 @@ from googleapiclient.errors import HttpError
 import crud
 from model import db, connect_to_db
 
-#event color (optional)
-#event deletion / updates 
-#delete by group or person
-
 app = flask.Flask(__name__)
 app.secret_key = os.environ['FLASK_KEY']
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly',
@@ -169,7 +165,6 @@ def delete_tier():
         tiers = True
     else:
         tiers = False
-    print(f"HEYY LOOK HERE tiers is {tiers}")
     return {
         "success": True, 
         "occasion_ids": occasion_ids,
@@ -189,8 +184,7 @@ def add_tier():
     db.session.add(tier)
     db.session.commit()
     tier_id = tier.tier_id
-    print(f"YOUR ID IS {tier_id}")
-    return { #better way to do this than sending back and forth? might simplify out if i change to react
+    return {
         "success": True,
         "tier-name": name,
         "tier-desc": description,
@@ -264,7 +258,6 @@ def import_contacts():
                     anni_date = event['date']
                     anniversary = datetime(anni_date["year"], anni_date["month"], anni_date["day"])
                     anni = crud.create_occasion(contact, "anniversary", True, anniversary)
-                    print(f"hey I added {fname}'s anni, {anni}")
                     db.session.add(anni)
     contacts_service.close() 
     user.last_contact_import = datetime.now()
@@ -311,7 +304,6 @@ def add_events():
     for occasion in tiered_occasions:
         event = create_event(occasion)
         event = calendar_service.events().insert(calendarId='primary', body=event).execute()
-        print(event)
         added_events.append({'summary':event['summary'], 'link': event['htmlLink']})
     calendar_service.close()
     return flask.render_template('events.html', user=user, added_events=added_events)
@@ -341,7 +333,6 @@ def export_preview():
         db.session.add(contact)
         db.session.add(occasion)
     nextSyncToken=results.get('nextSyncToken',"")
-    print(nextSyncToken)
 
 def create_event(occasion):
     tier = occasion.tier

@@ -49,11 +49,9 @@ for (const delButton of deleteButtons){
 }
 
 function deleteCheck(evt, tier_id){
-    console.log(`tier_id is ${tier_id}`)
     fetch(`/tier-in-use?tier_id=${tier_id}`)
         .then((response) => response.json())
         .then((responseData) => {
-            console.log(responseData)
             if (responseData["in_use"]){
                 const confirmationModal = new bootstrap.Modal(document.getElementById('inUseConfirmation'))
                 document.querySelector('#confirm').addEventListener('click',() => deleteTier(tier_id))
@@ -65,7 +63,6 @@ function deleteCheck(evt, tier_id){
         }); 
 }
 function deleteTier(tier_id){
-    console.log(tier_id)
     fetch('/delete-tier', {
          method: 'POST',
          body: JSON.stringify({"tier_id": tier_id}),
