@@ -1,6 +1,22 @@
 {% extends 'sidebar-base.html' %}
     {% block maincontent %}
+    <div>
     <h4>Import your contacts</h4>
+        {% for msg in get_flashed_messages() %}
+            <div class="toast show" id="success-toast" style="position: absolute; top: 10px; right: 10px;">
+                <div class="toast-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="MediumSeaGreen" class="bi-check-circle-fill" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                    </svg>
+                    <strong class="me-auto">&nbsp;&nbsp;Success</strong>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                {{ msg }} 
+                </div>
+            </div>
+        {% endfor %}      
+    </div>
     <br>
       {% if has_imported %}
       <!--- room for improvement (incremental load?)-->
@@ -31,6 +47,7 @@
         <br><br>
         <a href="/import-contacts-helper">Import contacts</a><br> 
     {% endif %}
+    
     <!-- Note: if you have other occasions you'd like to bulk manage your reminders for, you can add them on the Apply Notification Groups page. -->
 <script>
 (() => {
