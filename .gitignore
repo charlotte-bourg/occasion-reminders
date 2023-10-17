@@ -6,4 +6,4 @@ credentials.json
 quickstart.py
 token.json
 client_secret.json
-/deprecated-content
+deprecated-content/
