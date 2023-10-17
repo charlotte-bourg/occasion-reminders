@@ -1,9 +1,0 @@
-env
-*.pyc
-secrets.sh
-.gitignore
-credentials.json
-quickstart.py
-token.json
-client_secret.json
-deprecated-content/
