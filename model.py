@@ -19,7 +19,6 @@ class User(db.Model):
     last_contact_tier_export = db.Column(db.DateTime, nullable = True)
     contact_group_prefix = db.Column(db.String, nullable = True)
     last_sync_token = db.Column(db.String, nullable = True)
-    #selected_cal = db.Column(db.String, nullable=True) #by id # removing this feature for now - only using primary cal, may reintro
     contacts = db.relationship("Contact", back_populates = "user")
     tiers = db.relationship("Tier", back_populates = "user")
 
